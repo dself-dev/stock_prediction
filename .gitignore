@@ -1,34 +1,32 @@
-echo "# Python" > .gitignore
-echo "__pycache__/" >> .gitignore
-echo "*.py[cod]" >> .gitignore
-echo "*.pyo" >> .gitignore
-echo "*.pyd" >> .gitignore
-echo ".Python" >> .gitignore
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
 
-echo "" >> .gitignore
-echo "# Virtual Environment" >> .gitignore
-echo "venv/" >> .gitignore
-echo "env/" >> .gitignore
-echo ".venv/" >> .gitignore
+# Virtual Environment
+venv/
+env/
+.venv/
 
-echo "" >> .gitignore
-echo "# Data Files" >> .gitignore
-echo "*.csv" >> .gitignore
-echo "*.xlsx" >> .gitignore
-echo "*.json" >> .gitignore
+# Data Files
+*.csv
+*.xlsx
+*.json
 
-echo "" >> .gitignore
-echo "# Model Files" >> .gitignore
-echo "*.h5" >> .gitignore
-echo "*.pkl" >> .gitignore
+# Model Files
+*.h5
+*.pkl
 
-echo "" >> .gitignore
-echo "# IDE" >> .gitignore
-echo ".vscode/" >> .gitignore
-echo "*.swp" >> .gitignore
-echo "*.swo" >> .gitignore
+# IDE
+.vscode/
+*.swp
+*.swo
 
-echo "" >> .gitignore
-echo "# OS" >> .gitignore
-echo ".DS_Store" >> .gitignore
-echo "Thumbs.db" >> .gitignore
+# OS
+.DS_Store
+Thumbs.db
+
+# Folders
+CSV/
