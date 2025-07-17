@@ -1,0 +1,34 @@
+echo "# Python" > .gitignore
+echo "__pycache__/" >> .gitignore
+echo "*.py[cod]" >> .gitignore
+echo "*.pyo" >> .gitignore
+echo "*.pyd" >> .gitignore
+echo ".Python" >> .gitignore
+
+echo "" >> .gitignore
+echo "# Virtual Environment" >> .gitignore
+echo "venv/" >> .gitignore
+echo "env/" >> .gitignore
+echo ".venv/" >> .gitignore
+
+echo "" >> .gitignore
+echo "# Data Files" >> .gitignore
+echo "*.csv" >> .gitignore
+echo "*.xlsx" >> .gitignore
+echo "*.json" >> .gitignore
+
+echo "" >> .gitignore
+echo "# Model Files" >> .gitignore
+echo "*.h5" >> .gitignore
+echo "*.pkl" >> .gitignore
+
+echo "" >> .gitignore
+echo "# IDE" >> .gitignore
+echo ".vscode/" >> .gitignore
+echo "*.swp" >> .gitignore
+echo "*.swo" >> .gitignore
+
+echo "" >> .gitignore
+echo "# OS" >> .gitignore
+echo ".DS_Store" >> .gitignore
+echo "Thumbs.db" >> .gitignore
