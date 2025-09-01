@@ -58,14 +58,24 @@
 
 ## 📁 Files
 
-```
-├── predict.py                    # Main prediction model
-├── predict_tomorrow_apple.py     # Real-time prediction script
-├── combined_indicators.py        # Data fetching and indicator calculation
-├── rsi_only.py                  # RSI-only model experiment
-├── sma.py                       # SMA-based model
-└── README.md                    # This file
-```
+
+├── main.py                     # Main prediction model
+├── sentiment1.py               # Sentiment analysis (under development)
+├── news_AAPL.csv              # Scraped news data for AAPL
+├── requirements.txt           # Project dependencies
+├── .gitignore                 # Git ignore file
+├── first.png                  # Project screenshot
+├── geckodriver-v0.3...        # WebDriver for browser automation
+├── geckodriver.exe            # WebDriver executable
+├── CSV/                       # CSV data storage
+├── indicators/                # Technical indicator calculations
+├── main/                      # Main execution files
+│   └── predictions/           # Prediction outputs
+    └── predict_tommorrow
+    └── predict.py
+├── scraped_news/              # News scraping module
+├── venv/                      # Virtual environment
+└── README.md                  # This file
 
 ## 📦 Dependencies
 
@@ -86,6 +96,10 @@ echo "scikit-learn>=1.3.0" >> requirements.txt
 echo "tensorflow>=2.19.0" >> requirements.txt
 echo "yfinance>=0.2.0" >> requirements.txt
 echo "ta>=0.10.0" >> requirements.txt
+echo "playwright>=1.55.0" > requirements.txt
+echo "pytest>=8.4.0" > requirements.txt
+echo "pytest-playwright>=0.7.0" > requirements.txt
+echo "pytest-base-url>=2.1.0" > requirements.txt
 ```
 
 ## 🚀 Quick Start
@@ -135,7 +149,18 @@ python combined_indicators.py
 # Enter: 2020-01-01
 # Enter: 2025-07-15
 ```
+## 🗞️ News Data Collection
 
+**Features:**
+- Real-time news scraping with Playwright
+- Ticker-specific article collection  
+- Automated CSV storage for future analysis
+
+**Usage:**
+```bash
+python news_scraper.py
+# Enter ticker (e.g., AAPL)  
+# Scrapes recent news articles to CSV
 ### Make Predictions
 ```python
 python predict_tomorrow_apple.py
