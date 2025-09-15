@@ -53,7 +53,7 @@ class IndicatorsResult(TypedDict):
 
 def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
-    yfinance can return multi-index columns. This normalizes them to a flat
+    yfinance can return multi-index columns so i will use this to normalize them to a flat
     index so downstream code is predictable.
     """
     if isinstance(df.columns, pd.MultiIndex):
@@ -129,8 +129,8 @@ def compute_indicators(
     # Persist using your existing function (keeps your current storage format/paths)
     SaveData(df, t, iv)
 
-    # Return a small preview to avoid shoving huge payloads over HTTP
-    preview: List[IndicatorRow] = df.tail(5).to_dict(orient="records")  # type: ignore[assignment]
+    # Return a small preview to avoid shoving huge payloads over HTTP and get kick out or off
+    preview: List[IndicatorRow] = df.tail(5).to_dict(orient="records") 
 
     return IndicatorsResult(
         ticker=t,
