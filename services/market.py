@@ -126,7 +126,7 @@ def compute_indicators(
     ATR(df)
     VolumeSMA(df)
 
-    # Persist using your existing function (keeps your current storage format/paths)
+    # Persist using your existing function (keeps your current storage format/paths, ithink??)
     SaveData(df, t, iv)
 
     # Return a small preview to avoid shoving huge payloads over HTTP and get kick out or off

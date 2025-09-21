@@ -1,200 +1,159 @@
-'''predict_tomorrow.py
-
-Purpose: This is your live forecast script.
-
-How it works:
-
-Loads all historical data for a ticker (no train/test split).
-
-Trains the model with maximum data (500 epochs).
-
-Fetches today’s live stock data from Yahoo Finance.
-
-Recalculates all technical indicators on that live data.
-
-Pulls out today’s latest row and predicts tomorrow’s closing price.
-
-Prints tomorrow’s predicted price, the expected % change, and a simple up/down forecast.
-
-Role in project: This is the “real-world” tool you’d run this day-to-day to make a next-day prediction.'''
-'''Right now this model is predicting 96 percent accuracy before sentiment hopefully it stay that way'''
 
 
+"""
+predict_tomorrow.py
+Live forecast script: predicts tomorrow's stock price AND sentiment.
+"""
 
+import os
+import sys
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import yfinance as yf
 import ta
 from datetime import datetime
 import warnings
+
 warnings.filterwarnings('ignore')
 
-def predict_tomorrow(stock_symbol="IONQ", csv_file=None):
+# --- Fix import path so services works ---
+# Go up 2 levels from main/predictions into project root (Market_data)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+from services.sentiment import scrape_yahoo_news, score_with_vader
+
+
+def predict_tomorrow(stock_symbol: str):
     """
-    Predict tomorrow's stock price for any symbol
-    
-    Args:
-        stock_symbol: The stock ticker symbol (e.g., 'IONQ', 'AAPL', 'TSLA')
-        csv_file: Path to CSV file with historical data (optional, will use stock_symbol if not provided)
+    Predict tomorrow's stock price and get sentiment for the ticker.
     """
-    
-    # Use provided CSV file
-    csv_file = csv_file or f'{stock_symbol}_1d_complete.csv'
-    
-    # Load historical data
-    try:
+
+    # --- Load historical data (CSV or Yahoo Finance) ---
+    csv_file = f"{stock_symbol}_1d_complete.csv"
+    if os.path.exists(csv_file):
         df = pd.read_csv(csv_file)
         print(f" Loaded historical data from: {csv_file}")
-    except FileNotFoundError:
-        print(f" Error: Could not find {csv_file}")
-        print(f" Make sure the file exists in the current directory")
-        return None, None, None
-    
+    else:
+        print(f" No CSV found for {stock_symbol}, downloading with yfinance...")
+        df = yf.download(stock_symbol, period="2y", interval="1d")
+        df = df.reset_index()
+        df.to_csv(csv_file, index=False)
+
+    # --- Fix column issues ---
     df['Date'] = pd.to_datetime(df['Date'])
-    
-    # Remove rows where key indicators are missing
-    key_columns = ['RSI_14', 'Bollinger_Upper', 'Bollinger_Middle', 'Bollinger_Lower', 
-                   'EMA_12', 'EMA_26', 'SMA_10', 'SMA_20', 'SMA_50', 'MACD', 'MACD_Signal']
-    
+
+    # Flatten MultiIndex columns if Yahoo gives them (e.g., AAPL sometimes)
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
+
+    # Ensure numeric types for price/volume data
+    for col in ["Open", "High", "Low", "Close", "Volume"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # --- Technical Indicators ---
+    df['RSI_14'] = ta.momentum.rsi(df['Close'], window=14)
+    df['Bollinger_Upper'] = ta.volatility.bollinger_hband(df['Close'])
+    df['Bollinger_Middle'] = ta.volatility.bollinger_mavg(df['Close'])
+    df['Bollinger_Lower'] = ta.volatility.bollinger_lband(df['Close'])
+    df['EMA_12'] = ta.trend.ema_indicator(df['Close'], window=12)
+    df['EMA_26'] = ta.trend.ema_indicator(df['Close'], window=26)
+    df['SMA_10'] = ta.trend.sma_indicator(df['Close'], window=10)
+    df['SMA_20'] = ta.trend.sma_indicator(df['Close'], window=20)
+    df['SMA_50'] = ta.trend.sma_indicator(df['Close'], window=50)
+    df['MACD'] = ta.trend.macd(df['Close'])
+    df['MACD_Signal'] = ta.trend.macd_signal(df['Close'])
+    df['Stoch_K'] = ta.momentum.stoch(df['High'], df['Low'], df['Close'])
+    df['Stoch_D'] = ta.momentum.stoch_signal(df['High'], df['Low'], df['Close'])
+    df['ATR'] = ta.volatility.average_true_range(df['High'], df['Low'], df['Close'])
+    df['Volume_SMA'] = ta.trend.sma_indicator(df['Volume'], window=20)
+
+    key_columns = [
+        'RSI_14', 'Bollinger_Upper', 'Bollinger_Middle', 'Bollinger_Lower',
+        'EMA_12', 'EMA_26', 'SMA_10', 'SMA_20', 'SMA_50', 'MACD', 'MACD_Signal'
+    ]
+
     df_clean = df.dropna(subset=key_columns)
-    print(f" Training on ALL {df_clean.shape[0]} days of historical data for {stock_symbol}")
-    print(f" From {df_clean['Date'].min().strftime('%Y-%m-%d')} to {df_clean['Date'].max().strftime('%Y-%m-%d')}")
-    
-    # Define features
+
     feature_columns = [
         'Open', 'High', 'Low', 'Volume',
         'RSI_14', 'Bollinger_Upper', 'Bollinger_Middle', 'Bollinger_Lower',
         'EMA_12', 'EMA_26', 'SMA_10', 'SMA_20', 'SMA_50',
         'MACD', 'MACD_Signal', 'Stoch_K', 'Stoch_D', 'ATR', 'Volume_SMA'
     ]
-    
-    # Use ALL data for training
-    X = df_clean[feature_columns].copy()
-    y = df_clean['Close'].copy()
-    
-    # Handle any remaining NaN values
-    X = X.fillna(method='ffill').fillna(method='bfill')
-    
-    # Scale the features and target
+
+    # --- Training Data ---
+    X = df_clean[feature_columns].fillna(method='ffill').fillna(method='bfill')
+    y = df_clean['Close']
+
     scaler_X = StandardScaler()
     scaler_y = StandardScaler()
-    
     X_scaled = scaler_X.fit_transform(X)
     y_scaled = scaler_y.fit_transform(y.values.reshape(-1, 1)).flatten()
-    
-    # Build the model
+
+    # --- Model ---
     model = keras.Sequential([
         layers.Dense(1, input_shape=(X_scaled.shape[1],), activation='linear')
     ])
-    
     model.compile(optimizer='adam', loss='mse', metrics=['mae'])
-    
-    print(f" Training model on ALL historical data for {stock_symbol}...")
-    # Train with more epochs for better accuracy
-    model.fit(X_scaled, y_scaled, epochs=500, batch_size=32, 
-              validation_split=0.1, verbose=1)
-    
-    # Get TODAY's live data to predict TOMORROW
-    print(f"\n Fetching today's live data for {stock_symbol}...")
-    
-    try:
-        # Get recent data (100 days) to calculate indicators
-        df_live = yf.download(stock_symbol, period="100d", interval="1d")
-        df_live = df_live.reset_index()
-        
-        if df_live.empty:
-            print(f" Error: No live data found for {stock_symbol}")
-            print(" Make sure the stock symbol is valid and markets are open")
-            return None, None, None
-            
-    except Exception as e:
-        print(f" Error fetching live data for {stock_symbol}: {e}")
-        return None, None, None
-    
-    # Fix column names if needed
-    if isinstance(df_live.columns, pd.MultiIndex):
-        df_live.columns = [col[0] for col in df_live.columns]
-    
-    # Calculate technical indicators for live data
-    print(f" Calculating current technical indicators for {stock_symbol}...")
-    df_live['RSI_14'] = ta.momentum.rsi(df_live['Close'], window=14)
-    df_live['Bollinger_Upper'] = ta.volatility.bollinger_hband(df_live['Close'], window=20, window_dev=2)
-    df_live['Bollinger_Middle'] = ta.volatility.bollinger_mavg(df_live['Close'], window=20)
-    df_live['Bollinger_Lower'] = ta.volatility.bollinger_lband(df_live['Close'], window=20, window_dev=2)
-    df_live['EMA_12'] = ta.trend.ema_indicator(df_live['Close'], window=12)
-    df_live['EMA_26'] = ta.trend.ema_indicator(df_live['Close'], window=26)
-    df_live['SMA_10'] = ta.trend.sma_indicator(df_live['Close'], window=10)
-    df_live['SMA_20'] = ta.trend.sma_indicator(df_live['Close'], window=20)
-    df_live['SMA_50'] = ta.trend.sma_indicator(df_live['Close'], window=50)
-    df_live['MACD'] = ta.trend.macd(df_live['Close'])
-    df_live['MACD_Signal'] = ta.trend.macd_signal(df_live['Close'])
-    df_live['Stoch_K'] = ta.momentum.stoch(df_live['High'], df_live['Low'], df_live['Close'])
-    df_live['Stoch_D'] = ta.momentum.stoch_signal(df_live['High'], df_live['Low'], df_live['Close'])
-    df_live['ATR'] = ta.volatility.average_true_range(df_live['High'], df_live['Low'], df_live['Close'])
-    df_live['Volume_SMA'] = ta.trend.sma_indicator(df_live['Volume'], window=20)
-    
-    # Get today's data (most recent complete day)
-    today_data = df_live.dropna().iloc[-1]
-    today_date = today_data['Date'].strftime('%Y-%m-%d')
+
+    print(f" Training model on {df_clean.shape[0]} days of data for {stock_symbol}...")
+    model.fit(X_scaled, y_scaled, epochs=100, batch_size=32, validation_split=0.1, verbose=0)
+
+    # --- Predict Tomorrow ---
+    today_data = df_clean.iloc[-1]
     current_price = today_data['Close']
-    
-    print(f" Using data from: {today_date}")
-    print(f" Today's closing price: ${current_price:.2f}")
-    
-    # Prepare today's features for prediction
+    today_date = today_data['Date'].strftime('%Y-%m-%d')
+
     X_today = today_data[feature_columns].values.reshape(1, -1)
     X_today_scaled = scaler_X.transform(X_today)
-    
-    # Make prediction for tomorrow
+
     prediction_scaled = model.predict(X_today_scaled, verbose=0)
     predicted_close = scaler_y.inverse_transform(prediction_scaled.reshape(-1, 1)).flatten()[0]
-    
-    # Calculate predicted change
+
     change = predicted_close - current_price
     change_pct = (change / current_price) * 100
-    
-    # Results
-    print(f"\n TOMORROW'S PREDICTION for {stock_symbol}:")
-    print(f" Prediction Date: {datetime.now().strftime('%Y-%m-%d')} (Tomorrow)")
+
+    # --- Sentiment ---
+    print(f"\n Scraping sentiment for {stock_symbol}...")
+    news_result = scrape_yahoo_news(stock_symbol, limit=3, headless=True)
+    sentiment = score_with_vader(news_result["saved_to"])
+
+    # --- Report ---
+    print("\n" + "=" * 60)
+    print(f" TOMORROW'S FORECAST for {stock_symbol}")
+    print("=" * 60)
+    print(f" Date: {today_date}")
     print(f" Today's Close: ${current_price:.2f}")
     print(f" Predicted Close: ${predicted_close:.2f}")
-    print(f" Expected Change: ${change:+.2f} ({change_pct:+.1f}%)")
-    
+    print(f" Expected Change: {change:+.2f} ({change_pct:+.1f}%)")
+
     if change > 0:
-        print(f" PREDICTION: {stock_symbol} stock will GO UP tomorrow! 🚀")
+        print(" ML Prediction: GO UP")
     else:
-        print(f" PREDICTION: {stock_symbol} stock will GO DOWN tomorrow 📉")
-    
-    print(f"\n Check back tomorrow at market close to see if we're right!")
-    print(f" This prediction is based on {df_clean.shape[0]} days of learning")
-    
-    return predicted_close, current_price, change_pct
+        print(" ML Prediction: GO DOWN")
+
+    print(f"\n Sentiment: {sentiment['label'].upper()} "
+          f"(avg score {sentiment['avg_sentiment']:.3f})")
+
+    # --- Final Combined Summary since sediment can change price drastically I wanted to add warning t his will be imporved in future for better predicton though ---
+    if (change > 0 and sentiment['label'] == "positive") or (change < 0 and sentiment['label'] == "negative"):
+        print(" ML and Sentiment AGREE -> Stronger Signal")
+    else:
+        print(" ML and Sentiment DISAGREE -> Mixed Signal, be cautious")
+
+    print("=" * 60)
+
+    return predicted_close, current_price, change_pct, sentiment
+
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("STOCK PREDICTION FOR TOMORROW")
+    print("STOCK PREDICTION WITH SENTIMENT")
     print("=" * 60)
-    
-    # Ask user for CSV file only
-    csv_file = input("📁 Enter the CSV file name (e.g., TSLA_1d_complete.csv): ").strip()
-    
-    # Extract stock symbol from filename
-    # Assumes format like "TSLA_1d_complete.csv" or "TSLA_data.csv"
-    stock_symbol = csv_file.split('_')[0].upper()
-    
-    print(f"\n🔄 Loading {csv_file} for {stock_symbol} prediction...")
-    
-    predicted_close, current_price, change_pct = predict_tomorrow(stock_symbol, csv_file)
-    
-    if predicted_close is not None:
-        print(f"\n📋 SUMMARY:")
-        print(f"   Model trained on: {csv_file}")
-        print(f"   Tomorrow's predicted close: ${predicted_close:.2f}")
-        print(f"   Expected change: {change_pct:+.1f}%")
-    else:
-        print(f"\n Could not generate prediction")
-        print(" Check that you have the correct CSV file and stock symbol")
+
+    ticker = input("  Enter stock ticker (e.g., AAPL, TSLA, IONQ): ").strip().upper()
+    predict_tomorrow(ticker)
