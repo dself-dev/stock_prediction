@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Price Predictor</title>
+    <link rel="stylesheet" href="../assets/css/homepage.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Price Predictor</h1>
+        <p>Enter a stock ticker and a date range to predict tomorrow's price using machine learning.</p>
+        <form id="stockForm">
+            <label for="ticker">Stock Ticker:</label>
+            <input type="text" id="ticker" name="ticker" placeholder="e.g., AAPL" required>
+            
+            <label for="fromDate">From Date:</label>
+            <input type="date" id="fromDate" name="fromDate" required>
+            
+            <label for="toDate">To Date:</label>
+            <input type="date" id="toDate" name="toDate" required>
+            
+            <button type="submit">Predict Price</button>
+        </form>
+    </div>
+</body>
+</html>
