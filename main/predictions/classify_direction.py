@@ -20,7 +20,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 csv_file = input("Enter CSV filename (e.g. AAPL_1d_complete.csv): ").strip()
 df = pd.read_csv(csv_file)
 
-print(f"✅ Loaded {csv_file} with shape: {df.shape}")
+print(f" Loaded {csv_file} with shape: {df.shape}")
 
 # ---------------------------------------------------------
 # 2. Prepare features for the (X) and  (y) labels hopefully here if not I quit and I'll start learnit front end or learn philosophy!!!
@@ -47,7 +47,7 @@ for col in ['Label', 'Tomorrow_Close', 'Volume']:  # remove label & helper
 X = df[feature_cols].values
 y = df['Label'].values
 
-print(f"✅ Using {len(feature_cols)} features: {feature_cols[:5]} ...")
+print(f"Using {len(feature_cols)} features: {feature_cols[:5]} ...")
 
 # ---------------------------------------------------------
 # 3. Train / Test split
@@ -82,7 +82,7 @@ model.compile(
 # ---------------------------------------------------------
 # 6. Train model
 # ---------------------------------------------------------
-print("🚀 Training classifier...")
+print(" Training classifier...")
 history = model.fit(
     X_train, y_train,
     validation_split=0.1,

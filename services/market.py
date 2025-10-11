@@ -33,13 +33,13 @@ class IndicatorRow(TypedDict, total=False):
     A single row of the computed DataFrame, returned to clients for preview.
     Keys are flexible because indicator sets can add columns dynamically.
     """
-    # Common OHLCV keys yfinance returns (others may be present too).
+    # Common OHLCV keys yfinance returns (other ones might show up too).
     Date: Any
     Open: float
     High: float
     Low: float
     Close: float
-    Adj_Close: float  # sometimes present
+    Adj_Close: float  # sometimes present it is ...just one problem or anaother with yfincace and no real docs buts its free and works for now
     Volume: float
 
 

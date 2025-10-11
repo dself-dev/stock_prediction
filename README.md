@@ -1,105 +1,96 @@
 🎯 Stock Prediction Model – 96% Accuracy
 
-Real-world tested machine learning model for stock price prediction using technical indicators + sentiment analysis.
-
-
-
-
-
+A production-ready machine-learning project that predicts next-day stock prices using technical indicators and sentiment analysis, with an integrated web UI, SQLite user-login system, and an experimental UP/DOWN classifier.
 
 👨‍💻 Author
 
 Dennis Selfinger
-Machine Learning Engineer & Quantitative Analyst – Software Engineer
+Machine Learning Engineer · Software Engineer · Quantitative Analyst
 
-📊 Achieved 96% accuracy on real-world stock prediction (July 2025)
-
-🎯 Specialized in financial machine learning and technical analysis
-
-💼 2+ years of data science and algorithmic trading experience
-
-Contact:
+📊 96 % accuracy on real-world stock prediction (July 2025)
+🎯 Focused on financial ML, technical analysis & algorithmic trading
+💼 2 + years of data-science and algorithmic-trading experience
 
 GitHub: @dself-dev
 
-🚀 Results
+🚀 Overview
 
-Real-world validation on AAPL (July 16, 2025):
+The system provides:
 
-Predicted: $211.02
+Price-forecast model (regression) for next-day close
 
-Actual: $210.16
+Sentiment layer scraping Yahoo Finance headlines (VADER)
 
-Error: $0.86 (0.4%)
+Binary classifier predicting UP / DOWN direction
 
-Direction: ✅ Correctly predicted UP movement
+FastAPI back-end with SQLite user-registration & login
 
-Integration Update (Sept 2025):
-
-IONQ example: Predicted drop, Sentiment returned positive → forecast highlights “Mixed Signal, be cautious.”
-
-User now only runs predict_tomorrow.py for both technical + sentiment forecasts.
+Front-end GUI pages for login, account creation and home dashboard
 
 📊 Model Performance
-Stock	R² Score	RMSE	Test Period
-AAPL	95.1%	$3.40	5 years
-IONQ	97.6%	$1.89	5 years
-🛠️ Features
+Model	Metric	Value
+Price-forecast (AAPL)	R²	95.1 %
+	RMSE	$3.40
+Price-forecast (IONQ)	R²	97.6 %
+	RMSE	$1.89
+Classifier (UP/DOWN)	Baseline Accuracy	≈ 48 %*
 
-Technical Indicators Used (19 total):
+*Classifier is experimental; intended as a baseline for future tuning.
 
-RSI (14-period)
+🛠️ Core Features
+ML / Data
 
-Bollinger Bands (Upper, Middle, Lower)
+19 technical indicators: RSI, Bollinger Bands, EMAs (12/26), SMAs (10/20/50), MACD & Signal, Stoch K/D, ATR, Volume SMA
 
-EMAs (12, 26-period)
+Sentiment analysis: Yahoo Finance news → VADER polarity score
 
-SMAs (10, 20, 50-period)
+Binary classifier: Keras sequential dense network on the same indicators for UP/DOWN movement
 
-MACD & MACD Signal
+Regression: Keras linear model (indicators + sentiment) for next-day price
 
-Stochastic (K, D)
+Web / App
 
-Average True Range (ATR)
+FastAPI back-end: REST endpoints, SQLite user DB
 
-Volume SMA
+User authentication: sign-up / login pages
 
-Enhancements (Sept 2025):
-
-📰 Added news sentiment analysis (VADER).
-
-⚡ Unified pipeline: only one script to run (predict_tomorrow.py).
-
-📑 Better reporting: shows agreement/disagreement between ML + sentiment.
+Front-end assets: HTML + CSS + JS served as static pages
 
 🏗️ Architecture
 
-Model: Keras Linear Regression
+Data source: yfinance (2–5 yrs OHLCV, auto-downloaded)
 
-Training: 500 epochs (historical), 100 epochs (daily live)
+Pre-processing: StandardScaler on engineered indicators
 
-Features: 19 technical indicators + sentiment layer
+Regression model: Keras Dense(1) → linear output
 
-Data: 2–5 years of OHLCV data (auto-downloaded if CSV missing)
+Classifier: Keras Dense(16) → ReLU → Dense(1, sigmoid)
 
-Preprocessing: StandardScaler normalization
+Training: Regression ≈ 500 epochs; Classifier ≈ 25 epochs (baseline)
 
-📁 Files
-├── main.py                        # Main prediction model
-├── services/                      
-│   ├── market.py                   # Technical indicator calculator
-│   ├── sentiment.py                # Sentiment analysis (Yahoo + VADER)
-│   └── news.py                     # News scraper
-├── main/predictions/              
-│   └── predict_tomorrow.py         # Unified forecast (ML + sentiment)
-├── scraped_news/                   # Saved news CSVs
-├── requirements.txt                # Dependencies
-├── .gitignore                      # Git ignore file
-├── first.png                       # Screenshot
-├── venv/                           # Virtual environment
-└── README.md                       # This file
+📁 Project Structure
+api/
+ ├─ app.py                   # FastAPI with DB & login routes
+ ├─ database.py              # SQLite helpers
+ ├─ models.py                # User model
+frontEnd/
+ ├─ assets/css & js          # Styling + login/create-user scripts
+ └─ public/                  # Homepage.html, Login.html, Create_User.html
+main/
+ └─ predictions/
+      ├─ predict_tomorrow.py # Regression + sentiment forecast
+      └─ classify_direction.py# Binary UP/DOWN classifier
+services/
+ ├─ market.py                # Technical-indicator calculator
+ ├─ sentiment.py             # Yahoo news → VADER
+ └─ news.py                  # News scraper
+combined_indicators.py       # Builds indicator-rich CSV
+scraped_news/                # Saved news CSVs
+requirments.txt
+.gitignore
+README.md
 
-📦 Dependencies
+📦 Key Dependencies
 pandas>=2.0.0
 numpy>=1.24.0
 scikit-learn>=1.3.0
@@ -107,110 +98,75 @@ tensorflow>=2.19.0
 yfinance>=0.2.0
 ta>=0.10.0
 playwright>=1.55.0
-pytest>=8.4.0
-pytest-playwright>=0.7.0
-pytest-base-url>=2.1.0
 nltk>=3.9
+fastapi>=0.115.0
+uvicorn>=0.30.0
+sqlite3  # built-in
 
 🚀 Quick Start
-1. Clone the repository
+# clone + enter project
 git clone https://github.com/dself-dev/stock_prediction.git
 cd stock_prediction
 
-2. Create virtual environment
+# virtual environment
 python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+source venv/bin/activate      # Windows: venv\Scripts\activate
 
-3. Install dependencies
-pip install -r requirements.txt
+# install dependencies
+pip install -r requirments.txt
 
-4. Run unified prediction
+# run price-forecast (regression + sentiment)
 python main/predictions/predict_tomorrow.py
-# Enter: AAPL
 
-📈 Usage Examples
+# run UP/DOWN classifier
+python main/predictions/classify_direction.py
 
-Run unified prediction (price + sentiment):
+🧮 Workflow
 
-python main/predictions/predict_tomorrow.py
-# Enter: IONQ
+Collect OHLCV data → yfinance
 
+Compute 19 indicators → combined_indicators.py
 
-Output example:
+Scrape news & sentiment → services/sentiment.py
 
+Scale features → StandardScaler
+
+Train or run regression → next-day close prediction
+
+Train or run classifier → UP / DOWN probability
+
+Serve results via CLI or FastAPI-backed GUI
+
+📈 Example Output
 Today's Close: $70.41
 Predicted Close: $64.21
 Expected Change: -8.8%
 
 ML Prediction: GO DOWN
-Sentiment: POSITIVE (avg score 0.707)
-ML and Sentiment DISAGREE -> Mixed Signal, be cautious
+Sentiment: POSITIVE (avg 0.707)
+ML and Sentiment DISAGREE → Mixed Signal – be cautious
 
-🗞️ News Data Collection (Standalone Mode)
+🔮 Planned Enhancements
 
-You can still run sentiment analysis separately:
+Improve classifier accuracy with hyper-parameter tuning & longer history
 
-python services/sentiment.py
-# Enter ticker (e.g., AAPL)
-# Scrapes Yahoo Finance and calculates average sentiment
+Add real-time order-book / depth & volatility-spike features
 
-🧮 How It Works
+Upgrade to FinBERT / transformer-based sentiment
 
-Data Collection: OHLCV data via yfinance.
+Add unit tests + complexity documentation
 
-Feature Engineering: 19 technical indicators.
+Expand FastAPI endpoints to serve all predictions programmatically
 
-Sentiment Analysis: Scrapes Yahoo Finance news + VADER scoring.
+🎯 Why It Works
 
-Preprocessing: Scales features for ML.
+Indicators capture market-structure patterns
 
-Prediction: Keras regression model outputs tomorrow’s price.
+Sentiment adds macro / news-driven context
 
-Final Report: Shows ML forecast + sentiment + agreement check.
-
-📊 Technical Details
-
-Model Architecture:
-
-model = keras.Sequential([
-    layers.Dense(1, input_shape=(19,), activation='linear')
-])
-
-
-Training Configuration:
-
-Optimizer: Adam
-
-Loss: Mean Squared Error
-
-Epochs: 100–500
-
-Batch Size: 32
-
-Validation Split: 10%
-
-🎯 Results Analysis
-
-Why It Works:
-
-Indicators capture market structure.
-
-Sentiment adds context from real-world events.
-
-Agreement strengthens signals, disagreement warns of volatility.
-
-Metrics:
-
-High R² (>95%).
-
-Low RMSE.
-
-Real-world tests confirm directional accuracy.
+Agreement between models strengthens the signal; disagreement flags volatility
 
 ⚠️ Disclaimer
 
-Educational and research purposes only. Not financial advice.
-
-Markets are unpredictable.
-
-Use responsibly PLEASE!!!!
+For educational / research use only – not financial advice.
+Markets are unpredictable; trade responsibly.

@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base  # Correct import for SQLAlchemy 2.0
+from sqlalchemy.ext.declarative import declarative_base  # think this is the Correct import for SQLAlchemy 2.0
 from sqlalchemy.orm import sessionmaker  # For session management
 
 # Database URL - creates a local file 'users.db' in the current directory
@@ -22,5 +22,5 @@ class User(Base):
     state = Column(String)  # New: state field
     hashed_password = Column(String)
 
-# Create/update the table (run this to apply changes)
+# Create/update the table (I need this to run  to apply changes)
 Base.metadata.create_all(bind=engine)

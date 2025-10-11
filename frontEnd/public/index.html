@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="/assets/css/homepage.css">
+    <title>Stock Price Predictor</title>
+   
+</head>
+<body>
+    <header>
+        <h1>Stock Price Predictor</h1>
+        <nav>
+            <ul>
+                <li><a href="/login.html">LOGIN</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">News</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <p>Enter a stock ticker and a date range to predict tomorrow's price using machine learning.</p>
+
+        <form id="stockForm">
+            <label for="ticker">Stock Ticker:</label>
+            <input type="text" id="ticker" name="ticker" placeholder="e.g., AAPL" required>
+            
+            <label for="fromDate">From Date:</label>
+            <input type="date" id="fromDate" name="from_date" required>
+            
+            <label for="toDate">To Date:</label>
+            <input type="date" id="toDate" name="to_date" required>
+            
+            <button type="submit">Predict Price</button>
+        </form>
+
+        <div id="loader" class="loader" style="display:none;"></div>
+
+        <div id="resultContainer"></div>
+
+        <section class="cards">
+            <div class="card">
+                <h2>Featured Content</h2>
+                <p>I will add content later, like stock tips or articles.</p>
+            </div>
+            <div class="card">
+                <h2>Latest Updates</h2>
+                <p>will add dynamic content or news feeds here.</p>
+            </div>
+            <div class="card">
+                <h2>Resources</h2>
+                <p>Links or additional info can go here.</p>
+            </div>
+        </section>
+    </main>
+<script src="/assets/js/index.js"></script>
+    
+</body>
+</html>

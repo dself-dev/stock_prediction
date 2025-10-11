@@ -17,10 +17,10 @@ import ta
 from datetime import datetime
 import warnings
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore')#make sure to switch this and add to logging in near future
 
-# --- Fix import path so services works ---
-# Go up 2 levels from main/predictions into project root (Market_data)
+
+# Go up 2 levels from main/predictions into project root (Market_data) THis may change since i keep moving stuff around
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from services.sentiment import scrape_yahoo_news, score_with_vader

@@ -90,20 +90,34 @@
 import os
 import csv
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Form
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
 
 from .database import SessionLocal, User        # SQLAlchemy model
 from .models import UserCreate                  # Pydantic schema
 
-
+# --- this is the import for the predict_tommorrow which should let me connect user to backend---
+from main.predictions.predict_tommorrow import predict_tomorrow  
 # ------------------------------------------------------------
 #  FastAPI app
 # ------------------------------------------------------------
 app = FastAPI(title="Market Data API", version="0.1.0")
+
+
+# Allow frontend (HTML) to communicate with backend (FastAPI)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # i will  narrow this later if needed when i get names and url set
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -118,7 +132,7 @@ def get_db():
 
 
 # ------------------------------------------------------------
-#  API routes  (must come BEFORE mounting static files)
+#  API routes  (i got to make sure these come BEFORE mounting static files)
 # ------------------------------------------------------------
 class TextIn(BaseModel):
     text: str
@@ -175,10 +189,45 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return {"message": "User created successfully"}
 
+# ------------------------------------------------------------
+#  NEW: Stock prediction endpoint
+
+
+@app.post("/predict")
+def predict_price(
+    ticker: str = Form(...),
+    from_date: str = Form(None),
+    to_date: str = Form(None)
+):
+    """
+    Receives form data from frontend (ticker + optional dates),
+    runs ML model, and returns JSON with prediction + sentiment.
+    """
+    try:
+        predicted_close, current_price, change_pct, sentiment = predict_tomorrow(ticker)
+
+        # Ensure sentiment and numeric values are JSON-serializable
+        sentiment_data = {
+            "label": sentiment.get("label", "unknown") if isinstance(sentiment, dict) else str(sentiment),
+            "avg_sentiment": float(sentiment.get("avg_sentiment", 0)) if isinstance(sentiment, dict) else 0.0
+        }
+
+        return JSONResponse({
+            "ticker": ticker.upper(),
+            "current_price": round(float(current_price), 2),
+            "predicted_close": round(float(predicted_close), 2),
+            "change_pct": round(float(change_pct), 2),
+            "sentiment": sentiment_data
+        })
+
+    except Exception as e:
+        print(f"❌ Prediction error: {e}")
+        raise HTTPException(status_code=500, detail=f"Prediction error: {e}")
+
 
 # ------------------------------------------------------------
-#  Mount static files  (do this LAST!)
-# ------------------------------------------------------------
+#  Mount static files  (do this LAST! make sure i do not forget!!!!!!!!!)
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS_DIR = os.path.join(BASE_DIR, "frontEnd", "assets")
 PUBLIC_DIR = os.path.join(BASE_DIR, "frontEnd", "public")

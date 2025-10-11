@@ -75,4 +75,4 @@ print(f"Columns: {list(df.columns)}")
 print("\nNaN counts per column:")
 print(df.isnull().sum())
 
-print(f"\n🚀 Ready for Jupyter! Load with: df = pd.read_csv('{filename}')")
+print(f"\n🚀 ! Load with: df = pd.read_csv('{filename}')")
