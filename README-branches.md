@@ -45,3 +45,24 @@ Basically using two README files to keep track of changes.
 - Produces **confusion-matrix + precision / recall / F-scores** for evaluation  
 - Achieved **≈ 48 % baseline accuracy** — starting point for future tuning  
 - Updated main **README** to document classifier usage and roadmap
+
+
+---
+
+## Branch: add-fib-retracements *(Nov 2025)*  
+- Added **basic Fibonacci retracement calculator**  
+- Implemented `main/fiboncacci/fib.py` to compute:  
+  - Swing High  
+  - Swing Low  
+  - Standard Fib levels (23.6%, 38.2%, 50%, 61.8%, 78.6%)  
+- Tool prompts user for **symbol** and **buy date**, then auto-calculates retracement ranges  
+- This is an **early version** meant to lay the foundation for:  
+  - Using Fib levels as an additional ML feature  
+  - Helping users identify **sell zones** based on retracements  
+  - Later detecting when a user **already owns** a position and giving guidance  
+- Future work planned for this branch includes:  
+  - Pivot-based swing detection  
+  - Integrating Fib levels into `/predict`  
+  - Adding buy/sell recommendations alongside sentiment + technical indicators  
+
+
