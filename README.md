@@ -1,211 +1,278 @@
+📈 Stock Prediction & Market Analysis Engine
+Machine Learning · Technical Indicators · Sentiment AI · FastAPI App
 
-Stock Prediction Model – 96% Accuracy(but any sentiment can change this like earnings reports ect)..so please do not be farm on these predictions!!!!!!!!!
 
-A production-ready machine-learning project that predicts next-day stock prices using technical indicators and sentiment analysis, with an integrated web UI, SQLite user-login system, and an experimental UP/DOWN classifier.
+
+
+
+
+
+
+
+
+A production-grade machine-learning engine that predicts next-day stock prices, UP/DOWN movement, sentiment flow, and market-structure levels.
+
+This repo now includes:
+
+🔍 A full technical indicator engine (each indicator = its own class)
+
+🧪 Pytest suite with 100% passing tests
+
+🧠 Machine learning models (regression + classifier)
+
+📰 Sentiment scoring from Yahoo Finance
+
+🔢 Fibonacci retracement engine
+
+⚙️ FastAPI app with user auth (SQLite)
+
+🚀 A deep-learning roadmap (CNN → LSTM → Hybrid → Transformer)
+
+⚠️ All results are for research and educational use only. Markets can change quickly.
 
 👨‍💻 Author
 
-Dennis Selfinger  
-Machine Learning Engineer · Software Engineer · Quantitative Analyst  
-
-📊 96 % accuracy on real-world stock prediction (September 2025)  
-🎯 Focused on financial ML, technical analysis & algorithmic trading  
-💼 2 + years of data-science and algorithmic-trading experience  
+Dennis Selfinger
+Machine Learning Engineer • Software Engineer • Quantitative Analyst
 
 GitHub: @dself-dev
 
----
+Focused on:
 
-## 🚀 Overview
+Financial ML
 
-The system provides:
+Algorithmic trading
 
-- **Price-forecast model (regression)** for next-day close  
-- **Sentiment layer** scraping Yahoo Finance headlines (VADER)  
-- **Binary classifier** predicting UP / DOWN direction  
-- **FastAPI back-end** with SQLite user-registration & login  
-- **Front-end GUI pages** for login, account creation and home dashboard  
+AI engineering
 
----
+Distributed backend systems
 
-## 📊 Model Performance
+🚀 Overview
 
-| Model | Metric | Value |
-|-------|---------|--------|
-| Price-forecast (AAPL) | R² | **95.1 %** |
-|  | RMSE | **$3.40** |
-| Price-forecast (IONQ) | R² | **97.6 %** |
-|  | RMSE | **$1.89** |
-| Classifier (UP/DOWN) | Baseline Accuracy | **≈ 48 %*** |
+This system provides:
 
-\*Classifier is experimental; intended as a baseline for future tuning.
+📈 Next-day close prediction (regression model)
 
----
+🔮 UP/DOWN classifier
 
-## 🛠️ Core Features
+🧠 Sentiment layer from Yahoo Finance → VADER
 
-### ML / Data  
-- 19 technical indicators: RSI, Bollinger Bands, EMAs (12/26), SMAs (10/20/50), MACD & Signal, Stoch K/D, ATR, Volume SMA  
-- Sentiment analysis: Yahoo Finance news → VADER polarity score  
-- Binary classifier: Keras sequential dense network on the same indicators for UP/DOWN movement  
-- Regression: Keras linear model (indicators + sentiment) for next-day price  
+⚙️ Modular indicator engine (clean, testable, scalable)
 
-### **NEW: Fibonacci Retracement Engine**  
-- Added a foundational **Fibonacci retracement calculator** under `main/fiboncacci/`  
-- Automatically computes:  
-  - Swing High  
-  - Swing Low  
-  - Key Fib levels (23.6%, 38.2%, 50%, 61.8%, 78.6%)  
-- User enters a **symbol** and **buy date**, and the script calculates the full retracement range  
-- Designed as an early step toward:  
-  - **Adding Fib levels as another ML indicator**  
-  - **Highlighting buy/sell zones** based on market structure  
-  - **Integrating into FastAPI** so users see retracement signals alongside predicted prices & sentiment  
-- Upcoming enhancement: support for users who **already own** a position, allowing the app to suggest **take-profit levels** and **re-entry zones**  
+🧮 Fibonacci levels for market structure
 
-### Web / App  
-- FastAPI back-end: REST endpoints, SQLite user DB  
-- User authentication: sign-up / login pages  
-- Front-end assets: HTML + CSS + JS served as static pages  
+🧵 FastAPI authentication (login, signup)
 
----
+🌐 REST endpoints for predictions, indicators, and sentiment
 
-## 🏗️ Architecture
+📊 Model Performance (Sept 2025)
+Model	Metric	Value
+AAPL Regression	R²	95.1 %
+	RMSE	$3.40
+IONQ Regression	R²	97.6 %
+	RMSE	$1.89
+Direction Classifier	Accuracy	≈ 48 % (baseline)
+🔧 Architecture Diagram
+User → Frontend → FastAPI → ML Engine → Predictions
+                              │
+                              ├─ Indicator Engine (Classes)
+                              ├─ Sentiment Engine (News → VADER)
+                              ├─ Fibonacci Engine (Market Structure)
+                              └─ Deep Learning Models (Future)
 
-- **Data source:** yfinance (2–5 yrs OHLCV, auto-downloaded)  
-- **Pre-processing:** StandardScaler on engineered indicators  
-- **Regression model:** Keras Dense(1) → linear output  
-- **Classifier:** Keras Dense(16) → ReLU → Dense(1, sigmoid)  
-- **Training:** Regression ≈ 500 epochs; Classifier ≈ 25 epochs (baseline)  
+📈 Technical Indicators Engine (Modular + Tested)
 
----
+Located in:
 
-## 📁 Project Structure
+indicators/
 
-api/
-├─ app.py # FastAPI with DB & login routes
-├─ database.py # SQLite helpers
-├─ models.py # User model
-frontEnd/
-├─ assets/css & js # Styling + login/create-user scripts
-└─ public/ # Homepage.html, Login.html, Create_User.html
-main/
-└─ predictions/
-├─ predict_tomorrow.py # Regression + sentiment forecast
-└─ classify_direction.py# Binary UP/DOWN classifier
-main/fiboncacci/
-└─ fib.py # NEW Fibonacci retracement engine
-services/
-├─ market.py # Technical-indicator calculator
-├─ sentiment.py # Yahoo news → VADER
-└─ news.py # News scraper
-combined_indicators.py # Builds indicator-rich CSV
-scraped_news/ # Saved news CSVs
-requirements.txt
-.gitignore
-README.md
 
-yaml
-Copy code
+Each indicator:
 
----
+Lives in its own file
 
-## 📦 Key Dependencies
+Has a .calculate() method
 
-- pandas>=2.0.0  
-- numpy>=1.24.0  
-- scikit-learn>=1.3.0  
-- tensorflow>=2.19.0  
-- yfinance>=0.2.0  
-- ta>=0.10.0  
-- playwright>=1.55.0  
-- nltk>=3.9  
-- fastapi>=0.115.0  
-- uvicorn>=0.30.0  
-- sqlite3  *(built-in)*  
+Includes input validation
 
----
+Fully unit-tested
 
-## 🚀 Quick Start
+ML-ready
 
-```bash
-# clone + enter project
+User-selectable (future upgrade)
+
+✔ Implemented Indicators
+Indicator	Purpose
+RSI (14)	Overbought/oversold
+SMA (10/20/50)	Slow trend direction
+EMA (12/26)	Fast trend direction
+MACD & Signal	Trend shifts
+Bollinger Bands	Volatility squeeze
+ATR (14)	Volatility strength
+MFI (14)	Volume-weighted money flow
+CCI (20)	Statistical deviation & reversals
+Indicator Engine Diagram
+Indicators/
+│
+├── rsi.py
+├── sma.py
+├── ema.py
+├── macd.py
+├── bollinger.py
+├── atr.py
+├── mfi.py
+├── cci.py
+└── __init__.py
+
+🧪 Test Suite (pytest)
+
+All indicators have their own dedicated tests under:
+
+tests/
+
+
+Run the full suite:
+
+pytest
+
+
+✔ All tests passing
+✔ Validates shape, columns, calculations, and exceptions
+
+🔢 Fibonacci Retracement Engine
+
+Under:
+
+main/fiboncacci/fib.py
+
+
+Features:
+
+Auto-detect swing high & swing low
+
+Calculates 23.6%, 38.2%, 50%, 61.8%, 78.6% levels
+
+Lays foundation for:
+
+Take-profit suggestions
+
+Pullback zones
+
+ML integration
+
+📁 Project Structure
+Market_data/
+│
+├── api/                     # FastAPI backend
+├── frontEnd/               # Login + UI pages
+├── indicators/             # Modular indicator engine
+├── tests/                  # Pytest suite
+├── main/
+│   ├── predictions/        # Regression + classifier
+│   └── fiboncacci/         # Fibonacci calculations
+├── services/               # Sentiment, scraping, utilities
+├── scraped_news/
+├── combined_indicators.py
+├── requirements.txt
+└── README.md
+
+🧮 Workflow
+Download OHLCV → Compute Indicators → Scrape News
+→ Sentiment → Scale Features → Predict Price/Direction
+→ Fibonacci Levels → Serve Via FastAPI + UI
+
+🔧 Migration Notice: Indicator Engine Modernization
+
+The project previously calculated every indicator inside:
+
+predict_tomorrow.py
+
+
+This was replaced with a modular class-based architecture:
+
+Each indicator has its own file
+
+Each has its own .calculate() method
+
+100% test coverage
+
+Easy expansion (OBV, ADX, VWAP, Keltner...)
+
+Prepares for CNN/LSTM/Transformer models
+
+Enables user-selectable indicators (future)
+
+🧠 Deep Learning Roadmap (Major Upgrade)
+
+This represents the next evolution of the ML system:
+
+Raw OHLCV + Indicators + Sentiment
+                 │
+──────────────────────────────────────────────
+Step 1 — 🧩 CNN (Convolutional Neural Net)
+• Learns short-term local patterns
+• Detects volatility clusters
+──────────────────────────────────────────────
+                 ▼
+Step 2 — 🔁 LSTM (Long Short-Term Memory)
+• Learns sequential price behavior
+• Captures trend continuation & reversals
+──────────────────────────────────────────────
+                 ▼
+Step 3 — 🧬 Hybrid CNN → LSTM
+• CNN extracts features → LSTM interprets them
+• Industry-standard for forecasting
+──────────────────────────────────────────────
+                 ▼
+Step 4 — 🤖 Transformer Model
+• Same architecture as GPT models
+• Long-range dependency learning
+• Future: TFT, Informer, Autoformer
+
+Deep Learning Summary Table
+Stage	Model	Purpose	Status
+Step 1	CNN	Local pattern extraction	Planned
+Step 2	LSTM	Sequence learning	Planned
+Step 3	CNN → LSTM	Hybrid forecasting	Planned
+Step 4	Transformer	Advanced temporal modeling	Future
+🖥️ Optional GIF Demo (placeholder)
+
+You can record a GIF of your prediction script or UI and drop it into:
+
+docs/demo.gif
+
+
+Then embed it:
+
+![Demo](docs/demo.gif)
+
+🚀 Quick Start
 git clone https://github.com/dself-dev/stock_prediction.git
 cd stock_prediction
 
-# virtual environment
 python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
-
-# install dependencies
+venv\Scripts\activate
 pip install -r requirements.txt
 
-# run price-forecast (regression + sentiment)
 python main/predictions/predict_tomorrow.py
-
-# run UP/DOWN classifier
-python main/predictions/classify_direction.py
-
-# run Fibonacci retracement tool
 python main/fiboncacci/fib.py
-🧮 Workflow
-Collect OHLCV data → yfinance
 
-Compute 19 indicators → combined_indicators.py
+🎯 Why This Project Works
 
-Scrape news & sentiment → services/sentiment.py
+Indicators capture market structure
 
-Scale features → StandardScaler
+Sentiment captures external catalysts
 
-Train or run regression → next-day close prediction
+Fibonacci captures trend exhaustion
 
-Train or run classifier → UP / DOWN probability
+ML captures non-linear patterns
 
-Compute Fibonacci retracements → fib.py
+Modular architecture makes everything scalable and testable
 
-Serve results via CLI or FastAPI-backed GUI
-
-📈 Example Output
-yaml
-Copy code
-Today's Close: $70.41
-Predicted Close: $64.21
-Expected Change: -8.8%
-
-ML Prediction: GO DOWN
-Sentiment: POSITIVE (avg 0.707)
-ML and Sentiment DISAGREE → Mixed Signal – be cautious
-🔮 Planned Enhancements
-Improve classifier accuracy with hyper-parameter tuning & longer history
-
-Add real-time order-book / depth & volatility-spike features
-
-Upgrade to FinBERT / transformer-based sentiment
-
-Add unit tests + complexity documentation
-
-Expand FastAPI endpoints to serve all predictions programmatically
-
-NEW — Fibonacci Roadmap
-Full integration of Fibonacci levels into ML feature set
-
-Add logic for sell zones, take-profit targets, and rebuy ranges
-
-Auto-detect swing highs/lows using pivot algorithms
-
-Add chart overlays showing Fib levels visually in UI
-
-Add personalized logic for users who already own a stock, giving strategic retracement-based guidance
-
-🎯 Why It Works
-Indicators capture market-structure patterns
-
-Sentiment adds macro / news-driven context
-
-Fibonacci retracements quantify pullbacks and momentum exhaustion
-
-Agreement between models strengthens the signal; disagreement flags volatility
+Deep-learning roadmap future-proofs the system
 
 ⚠️ Disclaimer
-For educational / research use only – not financial advice.
-Markets are unpredictable; trade responsibly.
+
+This project is for research and educational use only.
+Not financial advice.
+Markets are volatile — trade safely.

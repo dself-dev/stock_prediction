@@ -1,6 +1,6 @@
-
 import yfinance as yf
 from datetime import datetime
+from typing import Dict
 
 # --------------------------------------
 # Fibonacci retracement calculator
@@ -8,11 +8,17 @@ from datetime import datetime
 FIB_LEVELS = [0.236, 0.382, 0.5, 0.618, 0.786]
 
 
-def calculate_fib_levels(high, low):
-    # Ensure we're always working with floats
-    high = float(high)
-    low = float(low)
+def calculate_fib_levels(high: float, low: float) -> Dict[float, float]:
+    """
+    Calculate Fibonacci retracement levels between a swing high and swing low.
 
+    Args:
+        high (float): The swing high price.
+        low (float): The swing low price.
+
+    Returns:
+        dict: A dictionary mapping Fibonacci ratios to price levels.
+    """
     diff = high - low
     levels = {}
 
@@ -23,44 +29,56 @@ def calculate_fib_levels(high, low):
     return levels
 
 
-# --------------------------------------
-# Main Program
-# --------------------------------------
-def main():
-    symbol = input("Enter symbol (e.g. AAPL, BTC-USD): ").upper()
-    buy_date = input("Enter buy date (YYYY-MM-DD): ")
+def main() -> None:
+    """
+    CLI tool to compute Fibonacci retracement levels for a given
+    stock symbol starting from a user-provided buy date.
+    """
+    symbol = input("Enter symbol (e.g. AAPL, BTC-USD): ").upper().strip()
+    buy_date = input("Enter buy date (YYYY-MM-DD): ").strip()
 
     # Validate date format
     try:
-        datetime.strptime(buy_date, "%Y-%m-%d")
+        buy_date_obj = datetime.strptime(buy_date, "%Y-%m-%d")
     except ValueError:
         print("Invalid date format. Please use YYYY-MM-DD.")
         return
 
+    # Check future date
+    if buy_date_obj > datetime.now():
+        print("Buy date cannot be in the future.")
+        return
+
     print("\nFetching data, please wait...\n")
 
-    # Explicitly set auto_adjust to avoid FutureWarning
+    # Download data
     data = yf.download(symbol, start=buy_date, auto_adjust=False)
 
+    # Validate ticker & data
     if data.empty:
-        print("No data found. Check symbol or date range.")
+        print(f"No data found for '{symbol}'. Check the ticker or date range.")
         return
 
-    # Make sure High/Low columns exist and have data
+    # Ensure columns exist
     if "High" not in data.columns or "Low" not in data.columns:
-        print("Downloaded data does not contain 'High' and 'Low' columns.")
+        print("Downloaded data does not contain High/Low columns.")
         return
 
-    # Drop any rows where High/Low is NaN
+    # Clean NaN values
     price_data = data[["High", "Low"]].dropna()
 
-    if price_data.empty:
-        print("No valid High/Low data after cleaning. Try a different date range.")
+    # Check for enough candles
+    if len(price_data) < 2:
+        print("Not enough price data to compute Fibonacci levels.")
         return
 
-    # Find swing high and swing low from the buy date to now
-    swing_high = float(price_data["High"].max())
-    swing_low = float(price_data["Low"].min())
+    # Extract numeric swing values
+    try:
+        swing_high = price_data["High"].max().item()
+        swing_low = price_data["Low"].min().item()
+    except AttributeError:
+        swing_high = float(price_data["High"].max())
+        swing_low = float(price_data["Low"].min())
 
     print(f"Swing Low  (from {buy_date}): {swing_low:.2f}")
     print(f"Swing High (from {buy_date}): {swing_high:.2f}\n")
@@ -75,6 +93,5 @@ def main():
     print("\nDone.")
 
 
-# Run the program
 if __name__ == "__main__":
     main()
