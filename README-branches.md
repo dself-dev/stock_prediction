@@ -65,4 +65,53 @@ Basically using two README files to keep track of changes.
   - Integrating Fib levels into `/predict`  
   - Adding buy/sell recommendations alongside sentiment + technical indicators  
 
+  Branch: updated-indicator-engine (Dec 2025)
+🔧 Major Refactor of All Technical Indicators
+
+Fully refactored every indicator class for consistency, reliability, and predictable behavior
+
+Standardized all indicators so .calculate() always returns a full DataFrame with clean, consistent column names
+
+Removed outdated / legacy files (like combined_indicators.py) that were no longer needed
+
+🧠 New Centralized Indicator Engine
+
+Added a new registry-based engine at:
+services/indicator_engine.py
+
+Supports running all indicators or a custom list with a single function call
+
+Automatically generates:
+
+a feature-rich DataFrame with all indicator columns
+
+a latest-values dict optimized for prediction endpoints
+
+🧪 Updated Test Suite
+
+Updated every pytest test to match the improved indicator structure
+
+Switched from tiny hard-coded tables to a real 3-year AAPL dataset, giving far more realistic and stable test results
+
+Cleaned up indicator behavior so tests validate:
+
+row counts
+
+numeric output types
+
+column creation
+
+non-empty values
+
+🧩 New Indicator Engine Tests
+
+Added new test module:
+tests/test_indicator_engine.py
+
+Confirms that the registry, custom selector, and “run all indicators” logic all behave correctly
+
+🎯 Overall Goal
+
+This branch was focused on getting every indicator fully passing under pytest, restructuring the codebase for long-term maintainability, and creating a clean, scalable foundation for future ML pipelines and prediction logic.
+
 
