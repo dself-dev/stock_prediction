@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 
-from indicators.bollinger import BollingerBands
+from indicators.bollinger import Bollinger
 
 
 def test_bollinger_calculation():
@@ -15,7 +15,7 @@ def test_bollinger_calculation():
     assert "Close" in df.columns, "CSV must contain a 'Close' column."
 
     # Create Bollinger Bands instance (default 20-period, 2-std)
-    bb = BollingerBands(df, window=20, window_dev=2)
+    bb = Bollinger(df, window=20, window_dev=2)
 
     # Run the calculation
     result = bb.calculate()

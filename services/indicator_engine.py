@@ -183,7 +183,7 @@ def register(name: str):
 # import the indicator classes
 # ————————————————————————
 from indicators.rsi import RSI
-from indicators.bollinger import BollingerBands
+from indicators.bollinger import Bollinger
 from indicators.atr import ATR
 from indicators.cci import CCI
 
@@ -195,7 +195,7 @@ from indicators.cci import CCI
 class RSI(RSI): pass
 
 @register("bollinger")
-class BollingerBands(BollingerBands): pass
+class Bollinger(Bollinger): pass
 
 @register("atr")
 class ATR(ATR): pass

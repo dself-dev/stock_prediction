@@ -1,294 +1,316 @@
-
-
-# """
-# predict_tomorrow.py
-# Live forecast script: predicts tomorrow's stock price AND sentiment.
-# """
-
-# import os
-# import sys
 # import pandas as pd
-# import numpy as np
-# from sklearn.preprocessing import StandardScaler
-# from tensorflow import keras
-# from tensorflow.keras import layers
 # import yfinance as yf
-# import ta
-# from datetime import datetime
-# import warnings
-
-# warnings.filterwarnings('ignore')#make sure to switch this and add to logging in near future
-
-
-# # Go up 2 levels from main/predictions into project root (Market_data) THis may change since i keep moving stuff around
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-
-# from services.sentiment import scrape_yahoo_news, score_with_vader
+# from sklearn.model_selection import train_test_split
+# from sklearn.preprocessing import StandardScaler
+# from sklearn.metrics import mean_squared_error
+# import tensorflow as tf
+# from tensorflow.keras import layers
+# from indicators.feature_builder import FeatureBuilder
 
 
-# def predict_tomorrow(stock_symbol: str):
+# class TomorrowPredictor:
 #     """
-#     Predict tomorrow's stock price and get sentiment for the ticker.
+#     ML pipeline:
+#     - download historical data
+#     - compute indicators (FeatureBuilder)
+#     - train a simple regression model
+#     - predict tomorrow's close
 #     """
 
-#     # --- Load historical data (CSV or Yahoo Finance) ---
-#     csv_file = f"{stock_symbol}_1d_complete.csv"
-#     if os.path.exists(csv_file):
-#         df = pd.read_csv(csv_file)
-#         print(f" Loaded historical data from: {csv_file}")
-#     else:
-#         print(f" No CSV found for {stock_symbol}, downloading with yfinance...")
-#         df = yf.download(stock_symbol, period="2y", interval="1d")
+#     def __init__(self):
+#         self.model = None
+#         self.scaler_X = StandardScaler()
+#         self.scaler_y = StandardScaler()
+
+#     # ------------------------------------------------------------
+#     # INTERNAL: Build features + target column
+#     # ------------------------------------------------------------
+#     def _prepare_data(self, df: pd.DataFrame) -> tuple:
+#         """Runs FeatureBuilder, removes NaNs, returns (X, y)."""
+
+#         df = df.copy()
+
+#         # Build indicators
+#         fb = FeatureBuilder(df)
+#         out = fb.build()
+
+#         # Remove warm-up NaNs
+#         out = out.dropna().copy()
+
+#         # Create target column (next-day close)
+#         out.loc[:, "target"] = out["Close"].shift(-1)
+#         out = out.dropna().copy()
+
+#         # Remove non-numeric columns (Date)
+#         for col in list(out.columns):
+#             if out[col].dtype == "object":
+#                 out = out.drop(columns=[col])
+
+#         if "Date" in out.columns:
+#             out = out.drop(columns=["Date"])
+
+#         y = out["target"]
+#         X = out.drop(columns=["target"])
+
+#         return X, y
+
+#     # ------------------------------------------------------------
+#     # TRAIN MODEL
+#     # ------------------------------------------------------------
+#     def train(self, ticker: str, years: int = 5):
+#         """Downloads data and trains the model."""
+
+#         df = yf.download(
+#             ticker,
+#             period=f"{years}y",
+#             interval="1d",
+#             auto_adjust=False,   # IMPORTANT FIX
+#             progress=False
+#         )
+
+#         if df.empty:
+#             raise ValueError("Could not load data from yfinance.")
+
 #         df = df.reset_index()
-#         df.to_csv(csv_file, index=False)
 
-#     # --- Fix column issues ---
-#     df['Date'] = pd.to_datetime(df['Date'])
+#         X, y = self._prepare_data(df)
 
-#     # Flatten MultiIndex columns if Yahoo gives them (e.g., AAPL sometimes)
-#     if isinstance(df.columns, pd.MultiIndex):
-#         df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
+#         # Scale features + target
+#         X_scaled = self.scaler_X.fit_transform(X)
+#         y_scaled = self.scaler_y.fit_transform(y.values.reshape(-1, 1)).flatten()
 
-#     # Ensure numeric types for price/volume data
-#     for col in ["Open", "High", "Low", "Close", "Volume"]:
-#         if col in df.columns:
-#             df[col] = pd.to_numeric(df[col], errors="coerce")
+#         # Train/test split
+#         X_train, X_test, y_train, y_test = train_test_split(
+#             X_scaled, y_scaled, test_size=0.2, shuffle=False
+#         )
 
-#     # --- Technical Indicators ---
-#     df['RSI_14'] = ta.momentum.rsi(df['Close'], window=14)
-#     df['Bollinger_Upper'] = ta.volatility.bollinger_hband(df['Close'])
-#     df['Bollinger_Middle'] = ta.volatility.bollinger_mavg(df['Close'])
-#     df['Bollinger_Lower'] = ta.volatility.bollinger_lband(df['Close'])
-#     df['EMA_12'] = ta.trend.ema_indicator(df['Close'], window=12)
-#     df['EMA_26'] = ta.trend.ema_indicator(df['Close'], window=26)
-#     df['SMA_10'] = ta.trend.sma_indicator(df['Close'], window=10)
-#     df['SMA_20'] = ta.trend.sma_indicator(df['Close'], window=20)
-#     df['SMA_50'] = ta.trend.sma_indicator(df['Close'], window=50)
-#     df['MACD'] = ta.trend.macd(df['Close'])
-#     df['MACD_Signal'] = ta.trend.macd_signal(df['Close'])
-#     df['Stoch_K'] = ta.momentum.stoch(df['High'], df['Low'], df['Close'])
-#     df['Stoch_D'] = ta.momentum.stoch_signal(df['High'], df['Low'], df['Close'])
-#     df['ATR'] = ta.volatility.average_true_range(df['High'], df['Low'], df['Close'])
-#     df['Volume_SMA'] = ta.trend.sma_indicator(df['Volume'], window=20)
+#         # Build regression model
+#         self.model = tf.keras.Sequential([
+#             layers.Dense(1, input_shape=(X_train.shape[1],), activation="linear")
+#         ])
+#         self.model.compile(optimizer="adam", loss="mse")
 
-#     key_columns = [
-#         'RSI_14', 'Bollinger_Upper', 'Bollinger_Middle', 'Bollinger_Lower',
-#         'EMA_12', 'EMA_26', 'SMA_10', 'SMA_20', 'SMA_50', 'MACD', 'MACD_Signal'
-#     ]
+#         # Train
+#         self.model.fit(X_train, y_train, epochs=40, batch_size=32, verbose=0)
 
-#     df_clean = df.dropna(subset=key_columns)
+#         # Evaluate quickly
+#         y_pred_scaled = self.model.predict(X_test, verbose=0)
+#         y_pred = self.scaler_y.inverse_transform(y_pred_scaled).flatten()
+#         y_test_orig = self.scaler_y.inverse_transform(y_test.reshape(-1, 1)).flatten()
 
-#     feature_columns = [
-#         'Open', 'High', 'Low', 'Volume',
-#         'RSI_14', 'Bollinger_Upper', 'Bollinger_Middle', 'Bollinger_Lower',
-#         'EMA_12', 'EMA_26', 'SMA_10', 'SMA_20', 'SMA_50',
-#         'MACD', 'MACD_Signal', 'Stoch_K', 'Stoch_D', 'ATR', 'Volume_SMA'
-#     ]
+#         mse = mean_squared_error(y_test_orig, y_pred)
+#         print(f"Finished training {ticker}. Test MSE: {mse:.4f}")
 
-#     # --- Training Data ---
-#     X = df_clean[feature_columns].fillna(method='ffill').fillna(method='bfill')
-#     y = df_clean['Close']
+#     # ------------------------------------------------------------
+#     # PREDICT TOMORROW
+#     # ------------------------------------------------------------
+#     def predict_tomorrow(self, ticker: str):
+#         """Predict tomorrow's closing price."""
 
-#     scaler_X = StandardScaler()
-#     scaler_y = StandardScaler()
-#     X_scaled = scaler_X.fit_transform(X)
-#     y_scaled = scaler_y.fit_transform(y.values.reshape(-1, 1)).flatten()
+#         if self.model is None:
+#             raise RuntimeError("Model not trained yet. Call train(ticker) first.")
 
-#     # --- Model ---
-#     model = keras.Sequential([
-#         layers.Dense(1, input_shape=(X_scaled.shape[1],), activation='linear')
-#     ])
-#     model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+#         df = yf.download(
+#             ticker,
+#             period="90d",
+#             interval="1d",
+#             auto_adjust=False,   # IMPORTANT FIX
+#             progress=False
+#         ).reset_index()
 
-#     print(f" Training model on {df_clean.shape[0]} days of data for {stock_symbol}...")
-#     model.fit(X_scaled, y_scaled, epochs=100, batch_size=32, validation_split=0.1, verbose=0)
+#         X, y = self._prepare_data(df)
 
-#     # --- Predict Tomorrow ---
-#     today_data = df_clean.iloc[-1]
-#     current_price = today_data['Close']
-#     today_date = today_data['Date'].strftime('%Y-%m-%d')
+#         latest = X.iloc[-1:].copy()
+#         latest_scaled = self.scaler_X.transform(latest)
 
-#     X_today = today_data[feature_columns].values.reshape(1, -1)
-#     X_today_scaled = scaler_X.transform(X_today)
+#         pred_scaled = self.model.predict(latest_scaled, verbose=0)[0][0]
+#         pred_price = float(self.scaler_y.inverse_transform([[pred_scaled]])[0][0])
 
-#     prediction_scaled = model.predict(X_today_scaled, verbose=0)
-#     predicted_close = scaler_y.inverse_transform(prediction_scaled.reshape(-1, 1)).flatten()[0]
+#         current_price = float(df["Close"].iloc[-1])
 
-#     change = predicted_close - current_price
-#     change_pct = (change / current_price) * 100
-
-#     # --- Sentiment ---
-#     print(f"\n Scraping sentiment for {stock_symbol}...")
-#     news_result = scrape_yahoo_news(stock_symbol, limit=3, headless=True)
-#     sentiment = score_with_vader(news_result["saved_to"])
-
-#     # --- Report ---
-#     print("\n" + "=" * 60)
-#     print(f" TOMORROW'S FORECAST for {stock_symbol}")
-#     print("=" * 60)
-#     print(f" Date: {today_date}")
-#     print(f" Today's Close: ${current_price:.2f}")
-#     print(f" Predicted Close: ${predicted_close:.2f}")
-#     print(f" Expected Change: {change:+.2f} ({change_pct:+.1f}%)")
-
-#     if change > 0:
-#         print(" ML Prediction: GO UP")
-#     else:
-#         print(" ML Prediction: GO DOWN")
-
-#     print(f"\n Sentiment: {sentiment['label'].upper()} "
-#           f"(avg score {sentiment['avg_sentiment']:.3f})")
-
-#     # --- Final Combined Summary since sediment can change price drastically I wanted to add warning t his will be imporved in future for better predicton though ---
-#     if (change > 0 and sentiment['label'] == "positive") or (change < 0 and sentiment['label'] == "negative"):
-#         print(" ML and Sentiment AGREE -> Stronger Signal")
-#     else:
-#         print(" ML and Sentiment DISAGREE -> Mixed Signal, be cautious")
-
-#     print("=" * 60)
-
-#     return predicted_close, current_price, change_pct, sentiment
+#         return {
+#             "ticker": ticker.upper(),
+#             "current_price": round(current_price, 2),
+#             "predicted_tomorrow": round(pred_price, 2),
+#             "change_pct": round((pred_price / current_price - 1) * 100, 2),
+#             "direction": "UP" if pred_price > current_price else "DOWN"
+#         }
 
 
+# # ------------------------------------------------------------
+# # Manual run
+# # ------------------------------------------------------------
 # if __name__ == "__main__":
-#     print("=" * 60)
-#     print("STOCK PREDICTION WITH SENTIMENT")
-#     print("=" * 60)
-
-#     ticker = input("  Enter stock ticker (e.g., AAPL, TSLA, IONQ): ").strip().upper()
-#     predict_tomorrow(ticker)
-
+#     p = TomorrowPredictor()
+#     p.train("AAPL", years=3)
+#     print(p.predict_tomorrow("AAPL"))
 """
-predict_tomorrow.py
-Live forecast script: predicts tomorrow's stock price AND sentiment.
+TomorrowPredictor
+-----------------
+This module trains a simple regression model to forecast tomorrow’s closing
+price for a given ticker.
+
+Workflow:
+1. Download raw price data from yfinance.
+2. Clean the data using DataCleaner ( goes to file data_cleaner.py so it doesnt have to handle it, this was problem)so the DataFrame consistently contains
+   standardized OHLCV columns.
+3. Build technical indicators using FeatureBuilder.
+4. Prepare supervised learning data where the target is tomorrow’s Close.
+5. Train a regression model using scaled features.
+6. For prediction, download and clean the most recent data, rebuild features,
+   and use the trained model to forecast the next closing price.
+
+This ensures the model always receives clean, consistent data regardless of
+whether yfinance returns lowercase columns, MultiIndex columns, or extra
+fields like Dividends or Stock Splits.
 """
 
-import os
-import sys
 import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
-from tensorflow import keras
-from tensorflow.keras import layers
 import yfinance as yf
-from datetime import datetime
-import warnings
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error
+import tensorflow as tf
+from tensorflow.keras import layers
 
-warnings.filterwarnings('ignore')  # TODO: replace with logging later
-
-# Allow imports when executed directly
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-
-from services.sentiment import scrape_yahoo_news, score_with_vader
-from services.indicator_engine import IndicatorEngine   # ✅ NEW — unified indicator runner
+from indicators.feature_builder import FeatureBuilder
+from data_pipeline.data_cleaner import DataCleaner   # NEW IMPORT
 
 
-def predict_tomorrow(stock_symbol: str):
+class TomorrowPredictor:
     """
-    Predict tomorrow's stock price and get sentiment for the ticker.
+    ML pipeline:
+    - download historical data
+    - clean data (DataCleaner)
+    - compute indicators (FeatureBuilder)
+    - train a simple regression model
+    - predict tomorrow's close
     """
 
-    # --- Load historical data (CSV or Yahoo Finance) ---
-    csv_file = f"{stock_symbol}_1d_complete.csv"
-    if os.path.exists(csv_file):
-        df = pd.read_csv(csv_file)
-        print(f" Loaded historical data from: {csv_file}")
-    else:
-        print(f" No CSV found for {stock_symbol}, downloading with yfinance...")
-        df = yf.download(stock_symbol, period="2y", interval="1d")
+    def __init__(self):
+        self.model = None
+        self.scaler_X = StandardScaler()
+        self.scaler_y = StandardScaler()
+
+    # ------------------------------------------------------------
+    # INTERNAL: Build features + target column
+    # ------------------------------------------------------------
+    def _prepare_data(self, df: pd.DataFrame) -> tuple:
+        """Runs FeatureBuilder, removes NaNs, returns (X, y)."""
+
+        df = df.copy()
+
+        # Build indicators
+        fb = FeatureBuilder(df)
+        out = fb.build()
+
+        # Remove warm-up NaNs
+        out = out.dropna().copy()
+
+        # Create target column (next-day close)
+        out.loc[:, "target"] = out["Close"].shift(-1)
+        out = out.dropna().copy()
+
+        # Remove non-numeric columns (Date etc.)
+        for col in list(out.columns):
+            if out[col].dtype == "object":
+                out = out.drop(columns=[col])
+
+        if "Date" in out.columns:
+            out = out.drop(columns=["Date"])
+
+        y = out["target"]
+        X = out.drop(columns=["target"])
+
+        return X, y
+
+    # ------------------------------------------------------------
+    # TRAIN MODEL
+    # ------------------------------------------------------------
+    def train(self, ticker: str, years: int = 5):
+        """Downloads data, cleans it, and trains the model."""
+
+        df = yf.download(
+            ticker,
+            period=f"{years}y",
+            interval="1d",
+            auto_adjust=False,
+            progress=False
+        )
+
+        if df.empty:
+            raise ValueError("Could not load data from yfinance.")
+
         df = df.reset_index()
-        df.to_csv(csv_file, index=False)
+        df = DataCleaner(df).clean()    # CLEAN RAW DATA
 
-    # --- Fix date & column issues ---
-    df['Date'] = pd.to_datetime(df['Date'])
+        X, y = self._prepare_data(df)
 
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
+        # Scale
+        X_scaled = self.scaler_X.fit_transform(X)
+        y_scaled = self.scaler_y.fit_transform(y.values.reshape(-1, 1)).flatten()
 
-    for col in ["Open", "High", "Low", "Close", "Volume"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+        # Split
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_scaled, y_scaled, test_size=0.2, shuffle=False
+        )
 
-    # ✅ NEW — Run all indicator classes instead of computing manually
-    df = IndicatorEngine(df).run()
+        # Regression model
+        self.model = tf.keras.Sequential([
+            layers.Dense(1, input_shape=(X_train.shape[1],), activation="linear")
+        ])
+        self.model.compile(optimizer="adam", loss="mse")
 
-    # ✅ Updated feature columns — now taken from added indicator classes
-    feature_columns = [col for col in df.columns 
-                       if col not in ["Date", "Close", "Adj Close"]]
+        # Train
+        self.model.fit(X_train, y_train, epochs=40, batch_size=32, verbose=0)
 
-    # --- Drop rows missing indicator data ---
-    df_clean = df.dropna(subset=feature_columns)
+        # Evaluate
+        y_pred_scaled = self.model.predict(X_test, verbose=0)
+        y_pred = self.scaler_y.inverse_transform(y_pred_scaled).flatten()
+        y_test_orig = self.scaler_y.inverse_transform(y_test.reshape(-1, 1)).flatten()
 
-    # --- Training Data ---
-    X = df_clean[feature_columns].fillna(method='ffill').fillna(method='bfill')
-    y = df_clean['Close']
+        mse = mean_squared_error(y_test_orig, y_pred)
+        print(f"Finished training {ticker}. Test MSE: {mse:.4f}")
 
-    scaler_X = StandardScaler()
-    scaler_y = StandardScaler()
+    # ------------------------------------------------------------
+    # PREDICT TOMORROW
+    # ------------------------------------------------------------
+    def predict_tomorrow(self, ticker: str):
+        """Predict tomorrow's closing price."""
 
-    X_scaled = scaler_X.fit_transform(X)
-    y_scaled = scaler_y.fit_transform(y.values.reshape(-1, 1)).flatten()
+        if self.model is None:
+            raise RuntimeError("Model not trained yet. Call train(ticker) first.")
 
-    # --- Model ---
-    model = keras.Sequential([
-        layers.Dense(1, input_shape=(X_scaled.shape[1],), activation='linear')
-    ])
-    model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+        df = yf.download(
+            ticker,
+            period="90d",
+            interval="1d",
+            auto_adjust=False,
+            progress=False
+        ).reset_index()
 
-    print(f" Training model on {df_clean.shape[0]} days of data for {stock_symbol}...")
-    model.fit(X_scaled, y_scaled, epochs=100, batch_size=32, validation_split=0.1, verbose=0)
+        df = DataCleaner(df).clean()   # CLEAN RAW DATA
 
-    # --- Predict Tomorrow ---
-    today_data = df_clean.iloc[-1]
-    current_price = today_data['Close']
-    today_date = today_data['Date'].strftime('%Y-%m-%d')
+        X, y = self._prepare_data(df)
 
-    X_today = today_data[feature_columns].values.reshape(1, -1)
-    X_today_scaled = scaler_X.transform(X_today)
+        latest = X.iloc[-1:].copy()
+        latest_scaled = self.scaler_X.transform(latest)
 
-    prediction_scaled = model.predict(X_today_scaled, verbose=0)
-    predicted_close = scaler_y.inverse_transform(prediction_scaled.reshape(-1, 1)).flatten()[0]
+        pred_scaled = self.model.predict(latest_scaled, verbose=0)[0][0]
+        pred_price = float(self.scaler_y.inverse_transform([[pred_scaled]])[0][0])
 
-    change = predicted_close - current_price
-    change_pct = (change / current_price) * 100
+        current_price = float(df["Close"].iloc[-1])
 
-    # --- Sentiment ---
-    print(f"\n Scraping sentiment for {stock_symbol}...")
-    news_result = scrape_yahoo_news(stock_symbol, limit=3, headless=True)
-    sentiment = score_with_vader(news_result["saved_to"])
-
-    # --- Report ---
-    print("\n" + "=" * 60)
-    print(f" TOMORROW'S FORECAST for {stock_symbol}")
-    print("=" * 60)
-    print(f" Date: {today_date}")
-    print(f" Today's Close: ${current_price:.2f}")
-    print(f" Predicted Close: ${predicted_close:.2f}")
-    print(f" Expected Change: {change:+.2f} ({change_pct:+.1f}%)")
-
-    if change > 0:
-        print(" ML Prediction: GO UP")
-    else:
-        print(" ML Prediction: GO DOWN")
-
-    print(f"\n Sentiment: {sentiment['label'].upper()} "
-          f"(avg score {sentiment['avg_sentiment']:.3f})")
-
-    if (change > 0 and sentiment['label'] == "positive") or \
-       (change < 0 and sentiment['label'] == "negative"):
-        print(" ML and Sentiment AGREE -> Stronger Signal")
-    else:
-        print(" ML and Sentiment DISAGREE -> Mixed Signal, be cautious")
-
-    print("=" * 60)
-
-    return predicted_close, current_price, change_pct, sentiment
+        return {
+            "ticker": ticker.upper(),
+            "current_price": round(current_price, 2),
+            "predicted_tomorrow": round(pred_price, 2),
+            "change_pct": round((pred_price / current_price - 1) * 100, 2),
+            "direction": "UP" if pred_price > current_price else "DOWN"
+        }
 
 
 if __name__ == "__main__":
-    print("=" * 60)
-    print("STOCK PREDICTION WITH SENTIMENT")
-    print("=" * 60)
-
-    ticker = input("  Enter stock ticker (e.g., AAPL, TSLA, IONQ): ").strip().upper()
-    predict_tomorrow(ticker)
+    p = TomorrowPredictor()
+    p.train("AAPL", years=3)
+    print(p.predict_tomorrow("AAPL"))

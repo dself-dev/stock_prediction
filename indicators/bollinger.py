@@ -26,7 +26,7 @@ import pandas as pd
 import ta
 
 
-class BollingerBands:
+class Bollinger:
     """
     Bollinger Bands indicator
     Adds three columns to the DataFrame:
