@@ -1,10 +1,14 @@
+console.log("🔥 NEW INDEX.JS LOADED 🔥");
+
+
 document.getElementById("stockForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const formData = new FormData(e.target);
     const loader = document.getElementById("loader");
     const resultContainer = document.getElementById("resultContainer");
 
-    // Remove any previous results
+    // Clear previous results
     resultContainer.innerHTML = "";
     loader.style.display = "block";
 
@@ -14,13 +18,14 @@ document.getElementById("stockForm").addEventListener("submit", async (e) => {
             body: formData
         });
 
-        loader.style.display = "none"; // Hide spinner
+        loader.style.display = "none";
 
         if (!response.ok) {
             throw new Error("Prediction request failed");
         }
 
         const result = await response.json();
+
         const color = result.change_pct >= 0 ? "#28a745" : "#dc3545";
 
         const resultDiv = document.createElement("div");
@@ -31,31 +36,46 @@ document.getElementById("stockForm").addEventListener("submit", async (e) => {
         resultDiv.style.padding = "15px";
         resultDiv.style.marginTop = "20px";
         resultDiv.style.textAlign = "center";
-        resultDiv.style.position = "relative"; // Added for absolute positioning of close button
+        resultDiv.style.position = "relative";
 
         resultDiv.innerHTML = `
-            <span class="close-btn" style="position: absolute; top: 10px; right: 10px; font-size: 24px; font-weight: bold; cursor: pointer; color: #6c757d;">&times;</span>
+            <span class="close-btn"
+                  style="position:absolute; top:10px; right:10px;
+                         font-size:24px; font-weight:bold; cursor:pointer;
+                         color:#6c757d;">&times;</span>
+
             <h2 style="color:${color};">${result.ticker} Prediction</h2>
-            <h3>Tomorrow's Price: <span style="color:${color};">$${result.predicted_close}</span></h3>
+
+            <h3>
+                Tomorrow's Price:
+                <span style="color:${color};">
+                    $${result.predicted_close}
+                </span>
+            </h3>
+
             <p>Current Price: $${result.current_price}</p>
             <p>Expected Change: <strong>${result.change_pct}%</strong></p>
-            <p>Sentiment: ${result.sentiment.label.toUpperCase()} (avg: ${result.sentiment.avg_sentiment.toFixed(3)})</p>
+            <p>Direction: <strong>${result.direction}</strong></p>
         `;
 
         resultContainer.appendChild(resultDiv);
-        // Fade in
+
+        // Fade-in effect
         setTimeout(() => resultDiv.classList.add("show"), 50);
 
-        // Add close button functionality
+        // Close button behavior
         const closeBtn = resultDiv.querySelector(".close-btn");
+
         closeBtn.addEventListener("click", () => {
-            resultDiv.remove(); // Removes the box from the DOM
+            resultDiv.remove();
         });
+
         closeBtn.addEventListener("mouseover", () => {
-            closeBtn.style.color = "#dc3545"; // Red on hover
+            closeBtn.style.color = "#dc3545";
         });
+
         closeBtn.addEventListener("mouseout", () => {
-            closeBtn.style.color = "#6c757d"; // Reset color
+            closeBtn.style.color = "#6c757d";
         });
 
     } catch (err) {
@@ -64,3 +84,5 @@ document.getElementById("stockForm").addEventListener("submit", async (e) => {
         console.error(err);
     }
 });
+
+

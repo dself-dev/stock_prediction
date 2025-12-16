@@ -182,65 +182,90 @@ def register(name: str):
 # ————————————————————————
 # import the indicator classes
 # ————————————————————————
+# from indicators.rsi import RSI
+# from indicators.bollinger import Bollinger
+# from indicators.atr import ATR
+# from indicators.cci import CCI
+
+
+# # ————————————————————————
+# # register the indicators
+# # ————————————————————————
+# @register("rsi")
+# class RSI(RSI): pass
+
+# @register("bollinger")
+# class Bollinger(Bollinger): pass
+
+# @register("atr")
+# class ATR(ATR): pass
+
+# @register("cci")
+# class CCI(CCI): pass
+
+
+# # ————————————————————————
+# # main apply function
+# # ————————————————————————
+# def apply_indicators(
+#     df: pd.DataFrame,
+#     use: List[str] = None
+# ) -> tuple[pd.DataFrame, dict]:
+#     """
+#     give it a df and a list like ["rsi","bollinger","atr"] or nothing → runs everything
+#     returns (full dataframe with all columns, dict of only the latest values)
+#     """
+#     if use is None or len(use) == 0:
+#         selected = list(INDICATOR_REGISTRY.keys())
+#     else:
+#         selected = [x.lower() for x in use]
+
+#     working_df = df.copy()
+
+#     for indicator_name in selected:
+#         if indicator_name not in INDICATOR_REGISTRY:
+#             raise ValueError(f"no indicator called '{indicator_name}'. i have: {list(INDICATOR_REGISTRY.keys())}")
+
+#         print(f"running {indicator_name}...")
+#         working_df = INDICATOR_REGISTRY[indicator_name](working_df)
+
+#     # build the dict with only the newest row – perfect for prediction later
+#     last_row = working_df.iloc[-1]
+#     original_columns = set(df.columns)
+
+#     latest = {
+#         "date": working_df.index[-1] if isinstance(working_df.index, pd.DatetimeIndex) else None,
+#         "close": last_row.get("Close"),
+#     }
+
+#     # grab only the new indicator columns
+#     for col in working_df.columns:
+#         if col not in original_columns:
+#             latest[col.lower()] = last_row[col]
+
+#     return working_df, latest
+
+
+# services/indicator_engine.py
+
+# services/indicator_engine.py
+
+import pandas as pd
+
 from indicators.rsi import RSI
 from indicators.bollinger import Bollinger
-from indicators.atr import ATR
-from indicators.cci import CCI
 
 
-# ————————————————————————
-# register the indicators
-# ————————————————————————
-@register("rsi")
-class RSI(RSI): pass
-
-@register("bollinger")
-class Bollinger(Bollinger): pass
-
-@register("atr")
-class ATR(ATR): pass
-
-@register("cci")
-class CCI(CCI): pass
-
-
-# ————————————————————————
-# main apply function
-# ————————————————————————
-def apply_indicators(
-    df: pd.DataFrame,
-    use: List[str] = None
-) -> tuple[pd.DataFrame, dict]:
+def apply_indicators(df: pd.DataFrame) -> pd.DataFrame:
     """
-    give it a df and a list like ["rsi","bollinger","atr"] or nothing → runs everything
-    returns (full dataframe with all columns, dict of only the latest values)
+    Apply only RSI and Bollinger Bands indicators to the input DataFrame.
     """
-    if use is None or len(use) == 0:
-        selected = list(INDICATOR_REGISTRY.keys())
-    else:
-        selected = [x.lower() for x in use]
+    df = df.copy()
 
-    working_df = df.copy()
+    # --- RSI ---
+    df = RSI(df).calculate()
 
-    for indicator_name in selected:
-        if indicator_name not in INDICATOR_REGISTRY:
-            raise ValueError(f"no indicator called '{indicator_name}'. i have: {list(INDICATOR_REGISTRY.keys())}")
+    # --- Bollinger Bands ---
+    df = Bollinger(df).calculate()
 
-        print(f"running {indicator_name}...")
-        working_df = INDICATOR_REGISTRY[indicator_name](working_df)
-
-    # build the dict with only the newest row – perfect for prediction later
-    last_row = working_df.iloc[-1]
-    original_columns = set(df.columns)
-
-    latest = {
-        "date": working_df.index[-1] if isinstance(working_df.index, pd.DatetimeIndex) else None,
-        "close": last_row.get("Close"),
-    }
-
-    # grab only the new indicator columns
-    for col in working_df.columns:
-        if col not in original_columns:
-            latest[col.lower()] = last_row[col]
-
-    return working_df, latest
+    return df
