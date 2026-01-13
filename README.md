@@ -1,86 +1,104 @@
-📈 Stock Prediction & Market Analysis Engine
-Machine Learning · Technical Indicators · Sentiment AI · FastAPI App
+📈 Stock Prediction & Market Intelligence Platform
 
+FastAPI · Machine Learning · Technical Indicators · Modular Architecture
 
+A full-stack market analysis platform that combines technical indicators, machine-learning price prediction, and a web-based user interface with authentication.
+Designed with clean separation of concerns, extensibility, and production deployment in mind.
 
-
-
-
-
-
-
-
-A production-grade machine-learning engine that predicts next-day stock prices, UP/DOWN movement, sentiment flow, and market-structure levels.
-
-This repo now includes:
-
-🔍 A full technical indicator engine (each indicator = its own class)
-
-🧪 Pytest suite with 100% passing tests
-
-🧠 Machine learning models (regression + classifier)
-
-📰 Sentiment scoring from Yahoo Finance
-
-🔢 Fibonacci retracement engine
-
-⚙️ FastAPI app with user auth (SQLite)
-
-🚀 A deep-learning roadmap (CNN → LSTM → Hybrid → Transformer)
-
-⚠️ All results are for research and educational use only. Markets can change quickly.
+⚠️ Educational & research use only. Not financial advice.
 
 👨‍💻 Author
 
 Dennis Selfinger
-Machine Learning Engineer • Software Engineer • Quantitative Analyst
+Machine Learning Engineer · Software Engineer · Quantitative Systems
 
 GitHub: @dself-dev
 
-Focused on:
+Primary interests:
 
-Financial ML
+Financial machine learning
 
-Algorithmic trading
+Time-series modeling
 
-AI engineering
+Backend API design
 
-Distributed backend systems
+Scalable data pipelines
 
-🚀 Overview
+🚀 Project Overview
 
-This system provides:
+This project provides an end-to-end pipeline for predicting next-day stock prices using historical market data and engineered technical features.
 
-📈 Next-day close prediction (regression model)
+Current capabilities:
 
-🔮 UP/DOWN classifier
+📊 Next-day price regression
 
-🧠 Sentiment layer from Yahoo Finance → VADER
+🧮 Modular technical indicator engine
 
-⚙️ Modular indicator engine (clean, testable, scalable)
+🧠 Neural-network regression model
 
-🧮 Fibonacci levels for market structure
+🌐 FastAPI backend
 
-🧵 FastAPI authentication (login, signup)
+🖥️ Browser-based frontend
 
-🌐 REST endpoints for predictions, indicators, and sentiment
+🔐 User registration & login
 
-📊 Model Performance (Sept 2025)
-Model	Metric	Value
-AAPL Regression	R²	95.1 %
-	RMSE	$3.40
-IONQ Regression	R²	97.6 %
-	RMSE	$1.89
-Direction Classifier	Accuracy	≈ 48 % (baseline)
-🔧 Architecture Diagram
-User → Frontend → FastAPI → ML Engine → Predictions
-                              │
-                              ├─ Indicator Engine (Classes)
-                              ├─ Sentiment Engine (News → VADER)
-                              ├─ Fibonacci Engine (Market Structure)
-                              └─ Deep Learning Models (Future)
+🧱 Clean, testable architecture
 
-📈 Technical Indicators Engine (Modular + Tested)
+Planned extensions (in progress):
+
+🔮 Direction classification (UP / DOWN)
+
+📰 Market sentiment analysis
+
+🐳 Dockerized deployment
+
+📈 Advanced deep-learning models
+
+🧠 System Architecture (Runtime Flow)
+User (Browser)
+  ↓
+HTML / JavaScript Frontend
+  ↓
+FastAPI (/predict)
+  ↓
+MarketDataService
+  ├─ DataFetcher (yfinance)
+  ├─ DataCleaner
+  ├─ FeatureBuilder
+  ↓
+TomorrowPredictor
+  ├─ Train
+  ├─ Predict
+  ↓
+JSON Response
+  ↓
+Frontend DOM Update
+
+
+FastAPI serves both the API and the frontend, while JavaScript dynamically injects prediction results into the UI.
+
+📊 Machine Learning Pipeline
+Data Flow
+Fetch OHLCV → Clean Data → Build Indicators
+→ Scale Features → Train Model → Predict Next Close
+
+Current Model
+
+Type: Linear regression (TensorFlow / Keras)
+
+Features used:
+
+RSI (14)
+
+Bollinger Upper / Middle / Lower
+
+Target: Next-day closing price
+
+Training: Per request (research phase)
+
+This design keeps the model simple while validating the end-to-end ML system before adding complexity.
+
+📈 Technical Indicator Engine
 
 Located in:
 
@@ -91,188 +109,163 @@ Each indicator:
 
 Lives in its own file
 
-Has a .calculate() method
+Exposes a .calculate() method
 
-Includes input validation
+Accepts and returns a DataFrame
 
-Fully unit-tested
+Is chainable and ML-ready
 
-ML-ready
-
-User-selectable (future upgrade)
-
-✔ Implemented Indicators
+Implemented Indicators
 Indicator	Purpose
-RSI (14)	Overbought/oversold
-SMA (10/20/50)	Slow trend direction
-EMA (12/26)	Fast trend direction
-MACD & Signal	Trend shifts
-Bollinger Bands	Volatility squeeze
-ATR (14)	Volatility strength
-MFI (14)	Volume-weighted money flow
-CCI (20)	Statistical deviation & reversals
-Indicator Engine Diagram
-Indicators/
-│
-├── rsi.py
-├── sma.py
-├── ema.py
-├── macd.py
-├── bollinger.py
-├── atr.py
-├── mfi.py
-├── cci.py
-└── __init__.py
+RSI (14)	Momentum / overbought-oversold
+SMA	Trend smoothing
+EMA	Fast trend tracking
+MACD	Trend shifts
+Bollinger Bands	Volatility
+ATR	Volatility strength
+MFI	Volume-weighted momentum
+CCI	Statistical deviation
 
-🧪 Test Suite (pytest)
+This modular design allows easy expansion (OBV, ADX, VWAP, etc.).
 
-All indicators have their own dedicated tests under:
+🧱 Backend (FastAPI)
+Core Endpoints
 
-tests/
+POST /predict → price prediction
 
+POST /register → user creation
 
-Run the full suite:
+POST /login → authentication
 
-pytest
+GET /health → service health check
 
+Backend Responsibilities
 
-✔ All tests passing
-✔ Validates shape, columns, calculations, and exceptions
+Input validation
 
-🔢 Fibonacci Retracement Engine
+ML orchestration
 
-Under:
+JSON serialization
 
-main/fiboncacci/fib.py
+Authentication logic
 
+Static frontend serving
 
-Features:
+🔐 Authentication
 
-Auto-detect swing high & swing low
+The platform includes:
 
-Calculates 23.6%, 38.2%, 50%, 61.8%, 78.6% levels
+User registration
 
-Lays foundation for:
+Login flow
 
-Take-profit suggestions
+Client-side form validation
 
-Pullback zones
+Backend credential verification
 
-ML integration
+This provides a foundation for:
+
+User-specific models
+
+Prediction history
+
+Role-based access (future)
+
+🖥️ Frontend
+
+Vanilla HTML, CSS, JavaScript
+
+Served directly by FastAPI
+
+Async API calls via fetch
+
+Dynamic DOM rendering
+
+Loading states & UI feedback
+
+The frontend is intentionally simple to keep focus on backend + ML correctness.
 
 📁 Project Structure
-Market_data/
-│
-├── api/                     # FastAPI backend
-├── frontEnd/               # Login + UI pages
-├── indicators/             # Modular indicator engine
-├── tests/                  # Pytest suite
+.
+├── frontEnd/
+│   ├── public/              # HTML pages
+│   └── assets/              # CSS / JS
+├── services/
+│   ├── market.py            # Data orchestration
+│   └── data_fetcher.py
+├── indicators/              # Technical indicators
 ├── main/
-│   ├── predictions/        # Regression + classifier
-│   └── fiboncacci/         # Fibonacci calculations
-├── services/               # Sentiment, scraping, utilities
-├── scraped_news/
-├── combined_indicators.py
+│   └── predictions/
+│       └── predict_tomorrow.py
+├── tests/                   # Unit tests
 ├── requirements.txt
+├── app.py                   # FastAPI entry point
 └── README.md
 
-🧮 Workflow
-Download OHLCV → Compute Indicators → Scrape News
-→ Sentiment → Scale Features → Predict Price/Direction
-→ Fibonacci Levels → Serve Via FastAPI + UI
+🧪 Testing
 
-🔧 Migration Notice: Indicator Engine Modernization
+Indicator-level unit tests
 
-The project previously calculated every indicator inside:
+Validation of required columns
 
-predict_tomorrow.py
+Defensive error handling in data pipeline
 
+The architecture is intentionally test-friendly.
 
-This was replaced with a modular class-based architecture:
+🧠 Roadmap
+Near-term
 
-Each indicator has its own file
+✅ Direction classifier (UP / DOWN)
 
-Each has its own .calculate() method
+✅ Sentiment scoring (news + NLP)
 
-100% test coverage
+✅ Feature selection experiments
 
-Easy expansion (OBV, ADX, VWAP, Keltner...)
+Mid-term
 
-Prepares for CNN/LSTM/Transformer models
+🐳 Dockerized deployment
 
-Enables user-selectable indicators (future)
+📊 Model persistence (no retrain per request)
 
-🧠 Deep Learning Roadmap (Major Upgrade)
+🧵 Async background training
 
-This represents the next evolution of the ML system:
+Long-term (Research)
 
-Raw OHLCV + Indicators + Sentiment
-                 │
-──────────────────────────────────────────────
-Step 1 — 🧩 CNN (Convolutional Neural Net)
-• Learns short-term local patterns
-• Detects volatility clusters
-──────────────────────────────────────────────
-                 ▼
-Step 2 — 🔁 LSTM (Long Short-Term Memory)
-• Learns sequential price behavior
-• Captures trend continuation & reversals
-──────────────────────────────────────────────
-                 ▼
-Step 3 — 🧬 Hybrid CNN → LSTM
-• CNN extracts features → LSTM interprets them
-• Industry-standard for forecasting
-──────────────────────────────────────────────
-                 ▼
-Step 4 — 🤖 Transformer Model
-• Same architecture as GPT models
-• Long-range dependency learning
-• Future: TFT, Informer, Autoformer
+CNN → LSTM hybrid models
 
-Deep Learning Summary Table
-Stage	Model	Purpose	Status
-Step 1	CNN	Local pattern extraction	Planned
-Step 2	LSTM	Sequence learning	Planned
-Step 3	CNN → LSTM	Hybrid forecasting	Planned
-Step 4	Transformer	Advanced temporal modeling	Future
-🖥️ Optional GIF Demo (placeholder)
+Transformer-based time-series forecasting
 
-You can record a GIF of your prediction script or UI and drop it into:
+Multi-asset portfolio modeling
 
-docs/demo.gif
-
-
-Then embed it:
-
-![Demo](docs/demo.gif)
-
-🚀 Quick Start
+🚀 Getting Started
 git clone https://github.com/dself-dev/stock_prediction.git
 cd stock_prediction
 
 python -m venv venv
-venv\Scripts\activate
+source venv/bin/activate   # or venv\Scripts\activate
 pip install -r requirements.txt
 
-python main/predictions/predict_tomorrow.py
-python main/fiboncacci/fib.py
+uvicorn app:app --reload
 
-🎯 Why This Project Works
 
-Indicators capture market structure
+Open:
 
-Sentiment captures external catalysts
+http://127.0.0.1:8000
 
-Fibonacci captures trend exhaustion
+🎯 Why This Project Matters
 
-ML captures non-linear patterns
+Demonstrates end-to-end ML system design
 
-Modular architecture makes everything scalable and testable
+Shows clean separation of data, features, models, and API
 
-Deep-learning roadmap future-proofs the system
+Balances research flexibility with production discipline
+
+Easy to extend, test, and deploy
+
+This is not a notebook experiment — I tried to make it as close to a  real system as I can at this point in my journey. Thank you for taking the time to look at this.
 
 ⚠️ Disclaimer
 
-This project is for research and educational use only.
-Not financial advice.
-Markets are volatile — trade safely.
+This project is for educational and research purposes only.
+It is not financial advice.
+Markets are volatile and unpredictable.
