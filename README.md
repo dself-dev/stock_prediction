@@ -1,188 +1,273 @@
-## 👨‍💻 Author
+📈 Stock Prediction & Market Intelligence Platform
 
-**Dennis Selfinger**  
-* Machine Learning Engineer & Quantitative Analyst-Software Engineer*
+FastAPI · Machine Learning · Technical Indicators · Modular Architecture
 
-- 📊 Achieved 96% accuracy on real-world stock prediction (July 2025)
-- 🎯 Specialized in financial machine learning and technical analysis
-- 💼 2+ years of data science and algorithmic trading experience
-- 🏆
-  
+A full-stack market analysis platform that combines technical indicators, machine-learning price prediction, and a web-based user interface with authentication.
+Designed with clean separation of concerns, extensibility, and production deployment in mind.
 
-**Contact:**
-- GitHub: [@Dself76](https://github.com/Dself76)
+⚠️ Educational & research use only. Not financial advice.
+
+👨‍💻 Author
+
+Dennis Selfinger
+Machine Learning Engineer · Software Engineer · Quantitative Systems
+
+GitHub: @dself-dev
+
+Primary interests:
+
+Financial machine learning
+
+Time-series modeling
+
+Backend API design
+
+Scalable data pipelines
+
+🚀 Project Overview
+
+This project provides an end-to-end pipeline for predicting next-day stock prices using historical market data and engineered technical features.
+
+Current capabilities:
+
+📊 Next-day price regression
+
+🧮 Modular technical indicator engine
+
+🧠 Neural-network regression model
+
+🌐 FastAPI backend
+
+🖥️ Browser-based frontend
+
+🔐 User registration & login
+
+🧱 Clean, testable architecture
+
+Planned extensions (in progress):
+
+🔮 Direction classification (UP / DOWN)
+
+📰 Market sentiment analysis
+
+🐳 Dockerized deployment
+
+📈 Advanced deep-learning models
+
+🧠 System Architecture (Runtime Flow)
+User (Browser)
+  ↓
+HTML / JavaScript Frontend
+  ↓
+FastAPI (/predict)
+  ↓
+MarketDataService
+  ├─ DataFetcher (yfinance)
+  ├─ DataCleaner
+  ├─ FeatureBuilder
+  ↓
+TomorrowPredictor
+  ├─ Train
+  ├─ Predict
+  ↓
+JSON Response
+  ↓
+Frontend DOM Update
 
 
-# 🎯 Stock Prediction Model - 96% Accuracy
+FastAPI serves both the API and the frontend, while JavaScript dynamically injects prediction results into the UI.
+
+📊 Machine Learning Pipeline
+Data Flow
+Fetch OHLCV → Clean Data → Build Indicators
+→ Scale Features → Train Model → Predict Next Close
+
+Current Model
+
+Type: Linear regression (TensorFlow / Keras)
+Architecture: Single Dense(1) output layer (no hidden layers)
+
+Features used:
+
+RSI (14)
+
+Bollinger Upper / Middle / Lower
+
+Target: Next-day closing price
+
+Training: Per request (research phase)
+
+This design keeps the model simple while validating the end-to-end ML system before adding complexity.
+The goal is to validate the full end-to-end system — data ingestion, feature engineering, scaling, model orchestration, and API integration — before introducing more complex nonlinear models.
+
+📈 Technical Indicator Engine
+
+Located in:
+
+indicators/
 
 
-**Real-world tested machine learning model for stock price prediction using technical indicators**
+Each indicator:
 
-![Python](https://img.shields.io/badge/python-v3.11+-blue.svg)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-2.19-orange.svg)
-![Accuracy](https://img.shields.io/badge/Accuracy-96%25-brightgreen.svg)
+Lives in its own file
 
-## 🚀 Results
+Exposes a .calculate() method
 
-**Real-world validation on AAPL (July 16, 2025):**
-- **Predicted:** $211.02
-- **Actual:** $210.16  
-- **Error:** $0.86 (0.4%)
-- **Direction:** ✅ Correctly predicted UP movement
+Accepts and returns a DataFrame
 
-## 📊 Model Performance
+Is chainable and ML-ready
 
-| Stock | R² Score | RMSE | Test Period |
-|-------|----------|------|-------------|
-| AAPL  | 95.1%    | $3.40| 5 years     |
-| IONQ  | 97.6%    | $1.89| 5 years     |
+Implemented Indicators
+Indicator	Purpose
+RSI (14)	Momentum / overbought-oversold
+SMA	Trend smoothing
+EMA	Fast trend tracking
+MACD	Trend shifts
+Bollinger Bands	Volatility
+ATR	Volatility strength
+MFI	Volume-weighted momentum
+CCI	Statistical deviation
 
-## 🛠️ Features
+This modular design allows easy expansion (OBV, ADX, VWAP, etc.).
 
-**Technical Indicators Used:**
-- RSI (14-period)
-- Bollinger Bands (Upper, Middle, Lower)
-- EMAs (12, 26-period)
-- SMAs (10, 20, 50-period)
-- MACD & MACD Signal
-- Stochastic (K, D)
-- Average True Range (ATR)
-- Volume SMA
+🧱 Backend (FastAPI)
+Core Endpoints
 
-## 🏗️ Architecture
+POST /predict → price prediction
 
-- **Model:** Keras Linear Regression
-- **Training:** 500 epochs
-- **Features:**  a perfect num of  technical indicators as not to overfit
-- **Data:** 5 years of daily OHLCV data
-- **Preprocessing:** StandardScaler normalization
+POST /register → user creation
 
-## 📁 Files
+POST /login → authentication
 
-```
-├── predict.py                    # Main prediction model
-├── predict_tomorrow_apple.py     # Real-time prediction script
-├── combined_indicators.py        # Data fetching and indicator calculation
-├── rsi_only.py                  # RSI-only model experiment
-├── sma.py                       # SMA-based model
-└── README.md                    # This file
-```
+GET /health → service health check
 
-## 📦 Dependencies
+Backend Responsibilities
 
-```
-pandas>=2.0.0
-numpy>=1.24.0
-scikit-learn>=1.3.0
-tensorflow>=2.19.0
-yfinance>=0.2.0
-ta>=0.10.0
-```
+Input validation
 
-Create a `requirements.txt` file:
-```bash
-echo "pandas>=2.0.0" > requirements.txt
-echo "numpy>=1.24.0" >> requirements.txt
-echo "scikit-learn>=1.3.0" >> requirements.txt
-echo "tensorflow>=2.19.0" >> requirements.txt
-echo "yfinance>=0.2.0" >> requirements.txt
-echo "ta>=0.10.0" >> requirements.txt
-```
+ML orchestration
 
-## 🚀 Quick Start
+JSON serialization
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/Dself76/stock_prediction.git
+Authentication logic
+
+Static frontend serving
+
+🔐 Authentication
+
+The platform includes:
+
+User registration
+
+Login flow
+
+Client-side form validation
+
+Backend credential verification
+
+This provides a foundation for:
+
+User-specific models
+
+Prediction history
+
+Role-based access (future)
+
+🖥️ Frontend
+
+Vanilla HTML, CSS, JavaScript
+
+Served directly by FastAPI
+
+Async API calls via fetch
+
+Dynamic DOM rendering
+
+Loading states & UI feedback
+
+The frontend is intentionally simple to keep focus on backend + ML correctness.
+
+📁 Project Structure
+.
+├── frontEnd/
+│   ├── public/              # HTML pages
+│   └── assets/              # CSS / JS
+├── services/
+│   ├── market.py            # Data orchestration
+│   └── data_fetcher.py
+├── indicators/              # Technical indicators
+├── main/
+│   └── predictions/
+│       └── predict_tomorrow.py
+├── tests/                   # Unit tests
+├── requirements.txt
+├── app.py                   # FastAPI entry point
+└── README.md
+
+🧪 Testing
+
+Indicator-level unit tests
+
+Validation of required columns
+
+Defensive error handling in data pipeline
+
+The architecture is intentionally test-friendly.
+
+🧠 Roadmap
+Near-term
+
+✅ Direction classifier (UP / DOWN)
+
+✅ Sentiment scoring (news + NLP)
+
+✅ Feature selection experiments
+
+Mid-term
+
+🐳 Dockerized deployment
+
+📊 Model persistence (no retrain per request)
+
+🧵 Async background training
+
+Long-term (Research)
+
+CNN → LSTM hybrid models
+
+Transformer-based time-series forecasting
+
+Multi-asset portfolio modeling
+
+🚀 Getting Started
+git clone https://github.com/dself-dev/stock_prediction.git
 cd stock_prediction
-```
 
-### 2. Create virtual environment (recommended)
-```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 3. Install dependencies
-```bash
+source venv/bin/activate   # or venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-Or install manually:
-```bash
-pip install pandas numpy scikit-learn tensorflow yfinance ta
-```
+uvicorn app:app --reload
 
-### 4. Get stock data
-```bash
-python combined_indicators.py
-# Enter ticker (e.g., AAPL)
-# Enter date range
-```
 
-### 5. Train and predict
-```bash
-python predict.py                    # Historical backtesting
-python predict_tomorrow_apple.py     # Real-time prediction
-```
+Open:
 
-## 📈 Usage Examples
+http://127.0.0.1:8000
 
-### Get Stock Data with Indicators
-```python
-python combined_indicators.py
-# Enter: AAPL
-# Enter: 1d  
-# Enter: 2020-01-01
-# Enter: 2025-07-15
-```
+🎯 Why This Project Matters
 
-### Make Predictions
-```python
-python predict_tomorrow_apple.py
-# Outputs: Tomorrow's predicted closing price
-```
+Demonstrates end-to-end ML system design
 
-## 🧮 How It Works
+Shows clean separation of data, features, models, and API
 
-1. **Data Collection:** Fetches OHLCV data using yfinance
-2. **Feature Engineering:** Calculates 19 technical indicators
-3. **Preprocessing:** Normalizes features using StandardScaler
-4. **Training:** Linear regression with TensorFlow/Keras
-5. **Prediction:** Uses current indicators to predict next close
+Balances research flexibility with production discipline
 
-## 📊 Technical Details
+Easy to extend, test, and deploy
 
-**Model Architecture:**
-```python
-model = keras.Sequential([
-    layers.Dense(1, input_shape=(19,), activation='linear')
-])
-```
+This is not a notebook experiment — I tried to make it as close to a  real system as I can at this point in my journey. Thank you for taking the time to look at this.
 
-**Training Configuration:**
-- Optimizer: Adam
-- Loss: Mean Squared Error
-- Epochs: 500
-- Batch Size: 32
-- Validation Split: 10%
+⚠️ Disclaimer
 
-## 🎯 Results Analysis
-
-**Why It Works:**
-- **Technical indicators capture market patterns**
-- **5 years of data provides robust training**
-- **Linear model prevents overfitting**
-- **Multiple indicators reduce noise**
-
-**Performance Metrics:**
-- High R² scores (95%+) indicate strong predictive power
-- Low RMSE relative to stock prices
-- Correct directional predictions in real-world tests
-
-## ⚠️ Disclaimer
-
-**This model is for educational and research purposes only. Not financial advice.**
-
-- Past performance doesn't guarantee future results
-- Markets are inher
+This project is for educational and research purposes only.
+It is not financial advice.
+Markets are volatile and unpredictable.
