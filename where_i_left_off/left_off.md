@@ -1,0 +1,1 @@
+#### got front end back up and working seperated and rewired api...only using two indicators the rsi and bollinger at this point but now they are seperate files, cleaning is seperate, data fetcher is seperate,, there is only place that call yfinace at this point, next i want to add more indicators but trial and error so we dont overfit with indicators

@@ -85,6 +85,7 @@ Fetch OHLCV → Clean Data → Build Indicators
 Current Model
 
 Type: Linear regression (TensorFlow / Keras)
+Architecture: Single Dense(1) output layer (no hidden layers)
 
 Features used:
 
@@ -97,6 +98,7 @@ Target: Next-day closing price
 Training: Per request (research phase)
 
 This design keeps the model simple while validating the end-to-end ML system before adding complexity.
+The goal is to validate the full end-to-end system — data ingestion, feature engineering, scaling, model orchestration, and API integration — before introducing more complex nonlinear models.
 
 📈 Technical Indicator Engine
 
