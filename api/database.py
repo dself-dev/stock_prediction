@@ -1,3 +1,7 @@
+#<--------------------------#######---------------------------->
+'''-----------Refactor the DB config to use DATABASE_URL from environment variables via dotenv instead of hardcoding SQLite, and add a .env.example so it’s flexible later.'''
+#<--------------------------#######---------------------------->
+
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base  # think this is the Correct import for SQLAlchemy 2.0
 from sqlalchemy.orm import sessionmaker  # For session management
