@@ -30,11 +30,13 @@ This project provides an end-to-end pipeline for predicting next-day stock price
 
 Current capabilities:
 
-📊 Next-day price regression
+📊 Next-day price regression with custom date ranges
 
 🧮 Modular technical indicator engine
 
-🧠 Neural-network regression model
+🧠 Neural-network regression model (linear + nonlinear ensemble)
+
+🔮 Direction classification with confidence scoring
 
 🌐 FastAPI backend
 
@@ -45,8 +47,6 @@ Current capabilities:
 🧱 Clean, testable architecture
 
 Planned extensions (in progress):
-
-🔮 Direction classification (UP / DOWN)
 
 📰 Market sentiment analysis
 
@@ -62,13 +62,17 @@ HTML / JavaScript Frontend
 FastAPI (/predict)
   ↓
 MarketDataService
-  ├─ DataFetcher (yfinance)
+  ├─ DataFetcher (yfinance with custom dates)
   ├─ DataCleaner
   ├─ FeatureBuilder
   ↓
-TomorrowPredictor
+TomorrowPredictor (linear + nonlinear)
   ├─ Train
-  ├─ Predict
+  ├─ Predict & Average
+  ↓
+DirectionClassifier (binary probability)
+  ├─ Train
+  ├─ Predict Confidence
   ↓
 JSON Response
   ↓
@@ -79,26 +83,31 @@ FastAPI serves both the API and the frontend, while JavaScript dynamically injec
 
 📊 Machine Learning Pipeline
 Data Flow
-Fetch OHLCV → Clean Data → Build Indicators
-→ Scale Features → Train Model → Predict Next Close
+Fetch OHLCV (custom dates) → Clean Data → Build Indicators
+→ Scale Features → Train Models → Predict Next Close & Direction
 
-Current Model
+Current Models
 
-Type: Linear regression (TensorFlow / Keras)
-Architecture: Single Dense(1) output layer (no hidden layers)
+Price Prediction (TomorrowPredictor):
+- Linear regression (simple Dense layer)
+- Nonlinear MLP (multi-layer ReLU network)
+- Ensemble: Average of linear and nonlinear outputs for robustness
 
 Features used:
+- RSI (14)
+- Bollinger Bands (Upper, Middle, Lower)
+- Additional indicators (SMA, EMA, MACD, etc. for classifier)
 
-RSI (14)
+Target: Next-day closing price (regression) + UP/DOWN direction (classification)
 
-Bollinger Upper / Middle / Lower
+Training: Per request (research phase, with early stopping to prevent overfitting)
 
-Target: Next-day closing price
+Direction Confidence (DirectionClassifier):
+- Binary neural network (ReLU hidden layers, sigmoid output)
+- Predicts probability of UP (close tomorrow >= today) or DOWN
+- Adds confidence % to output (e.g., 62% UP)
 
-Training: Per request (research phase)
-
-This design keeps the model simple while validating the end-to-end ML system before adding complexity.
-The goal is to validate the full end-to-end system — data ingestion, feature engineering, scaling, model orchestration, and API integration — before introducing more complex nonlinear models.
+This design keeps the models simple while validating the end-to-end ML system before adding complexity.
 
 📈 Technical Indicator Engine
 
@@ -127,13 +136,14 @@ Bollinger Bands	Volatility
 ATR	Volatility strength
 MFI	Volume-weighted momentum
 CCI	Statistical deviation
+Stochastic	Oscillator for momentum
 
 This modular design allows easy expansion (OBV, ADX, VWAP, etc.).
 
 🧱 Backend (FastAPI)
 Core Endpoints
 
-POST /predict → price prediction
+POST /predict → price prediction with direction confidence
 
 POST /register → user creation
 
@@ -189,19 +199,50 @@ The frontend is intentionally simple to keep focus on backend + ML correctness.
 
 📁 Project Structure
 .
+├── api/
+│   └── app.py               # FastAPI entry point
 ├── frontEnd/
-│   ├── public/              # HTML pages
-│   └── assets/              # CSS / JS
+│   ├── public/              # HTML pages (index.html, login.html, create_new_user.html)
+│   └── assets/              # CSS / JS (homepage.css, index.js, login_script.js, create_user_script.js)
 ├── services/
 │   ├── market.py            # Data orchestration
-│   └── data_fetcher.py
+│   ├── data_fetcher.py      # yfinance data retrieval
+│   ├── indicator_engine.py  # Indicator application wrapper
+│   ├── news.py              # News fetching (planned)
+│   └── sentiment.py         # Sentiment analysis (planned)
 ├── indicators/              # Technical indicators
+│   ├── atr.py
+│   ├── bollinger.py
+│   ├── cci.py
+│   ├── ema.py
+│   ├── macd.py
+│   ├── mfi.py
+│   ├── rsi.py
+│   ├── sma.py
+│   └── stochastic.py
 ├── main/
+│   ├── fibonacci/           # Fibonacci tools (planned)
 │   └── predictions/
-│       └── predict_tomorrow.py
+│       └── classify_direction.py  # Direction classifier
+│       └── predict_tomorrow.py    # Price predictor
 ├── tests/                   # Unit tests
+│   ├── test_atr.py
+│   ├── test_bollinger.py
+│   ├── test_cci.py
+│   ├── test_data_cleaner.py
+│   ├── test_data_fetcher.py
+│   ├── test_ema.py
+│   ├── test_feature_build.py
+│   ├── test_indicator_engine.py
+│   ├── test_macd.py
+│   ├── test_mfi.py
+│   ├── test_rsi.py
+│   ├── test_sma.py
+│   └── test_tomorrow_predict.py
+├── database.py              # SQLite user database
+├── models.py                # Pydantic models for validation
 ├── requirements.txt
-├── app.py                   # FastAPI entry point
+├── .gitignore
 └── README.md
 
 🧪 Testing
@@ -217,13 +258,13 @@ The architecture is intentionally test-friendly.
 🧠 Roadmap
 Near-term
 
-✅ Direction classifier (UP / DOWN)
+✅ Direction classifier (UP / DOWN with confidence)
 
-✅ Sentiment scoring (news + NLP)
-
-✅ Feature selection experiments
+✅ Custom date ranges for data fetch
 
 Mid-term
+
+📰 Market sentiment analysis
 
 🐳 Dockerized deployment
 
@@ -244,10 +285,10 @@ git clone https://github.com/dself-dev/stock_prediction.git
 cd stock_prediction
 
 python -m venv venv
-source venv/bin/activate   # or venv\Scripts\activate
+source venv/bin/activate   # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 
-uvicorn app:app --reload
+uvicorn api.app:app --reload
 
 
 Open:
@@ -264,7 +305,7 @@ Balances research flexibility with production discipline
 
 Easy to extend, test, and deploy
 
-This is not a notebook experiment — I tried to make it as close to a  real system as I can at this point in my journey. Thank you for taking the time to look at this.
+This is not a notebook experiment — I tried to make it as close to a real system as I can at this point in my journey. Thank you for taking the time to look at this.
 
 ⚠️ Disclaimer
 
