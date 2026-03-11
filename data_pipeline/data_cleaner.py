@@ -97,7 +97,7 @@ class DataCleaner:
         - If no Date info → leave index as-is (CSV fallback)
         """
 
-        # Already correct (yfinance)
+        
         if isinstance(self.df.index, pd.DatetimeIndex):
             self.df.index = self.df.index.tz_localize(None)
             return
