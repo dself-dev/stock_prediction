@@ -1,27 +1,4 @@
-# import ta
-# import pandas as pd
 
-# class BollingerBands:
-#     """Bollinger Bands indicator"""
-
-#     def __init__(self, df: pd.DataFrame, window=20, window_dev=2):
-#         if "Close" not in df.columns:
-#             raise ValueError("DataFrame must contain 'Close' column.")
-#         self.df = df.copy()
-#         self.window = window
-#         self.window_dev = window_dev
-
-#     def calculate(self):
-#         self.df["Bollinger_Upper"] = ta.volatility.bollinger_hband(
-#             self.df["Close"], window=self.window, window_dev=self.window_dev
-#         )
-#         self.df["Bollinger_Middle"] = ta.volatility.bollinger_mavg(
-#             self.df["Close"], window=self.window
-#         )
-#         self.df["Bollinger_Lower"] = ta.volatility.bollinger_lband(
-#             self.df["Close"], window=self.window, window_dev=self.window_dev
-#         )
-#         return self.df
 import pandas as pd
 import ta
 
