@@ -1,20 +1,44 @@
+👨‍💻 Author
+
+Dennis Selfinger
+Machine Learning Engineer · Software Engineer · Quantitative Systems 
+Email: dselfinger.dev@gmail.com (for project inquiries or collaboration, job/ resume info)
+
+GitHub: @dself-dev
+
+Primary interests:
+
+Data, Data Modeling, Dealing with all types of Data of I never get bored of
+
+Financial machine learning
+
+Time-series modeling
+
+Backend API design
+
+Scalable data pipelines
+
+
 📈 Stock Prediction & Market Intelligence Platform
 
 FastAPI · Machine Learning · Technical Indicators · Modular Architecture
 
 A full-stack market analysis platform that combines technical indicators, machine-learning price prediction, and a web-based user interface with authentication.
-Designed with clean separation of concerns, extensibility, and production deployment in mind.
+Designed with clean separation of concerns, extensibility, and production deployment in mind. As this is my first major project that I've completed independently, I wanted to explain why I emphasized "clean separation of concerns" in the design—it might otherwise sound like generic AI-generated text. When I built this, I didn't even know there was a formal term like SoC (Separation of Concerns); I just implemented it intuitively because it made sense to keep the code organized, easier to maintain and debug, and more scalable in the long run. It also struck me that this approach would help any potential collaborator quickly grasp what's happening, as each component handles one specific task without overlapping responsibilities (meaning no duplication of effort or files performing similar jobs). For example, I split everything into dedicated modules—like keeping data fetching in one folder, indicators in another, and the ML models isolated—so it's simpler for me (or anyone else) to fix, expand, or tweak parts without disrupting the entire system. Plus, it's designed to grow and deploy smoothly without major headaches. I'm adding this note to the README to highlight how much I've learned through this process: not just coding, but also how to structure projects thoughtfully, ensure maintainability, and plan for future enhancements and production readiness.(I hope this makes sense and is not to much)
 
 ⚠️ Educational & research use only. Not financial advice.
 
 👨‍💻 Author
 
 Dennis Selfinger
-Machine Learning Engineer · Software Engineer · Quantitative Systems
+Machine Learning Engineer · Software Engineer · Quantitative Systems 
+Email: dselfinger.dev@gmail.com (for project inquiries or collaboration, job/ resume info)
 
 GitHub: @dself-dev
 
 Primary interests:
+
+Data, Data Modeling, Dealing with all types of Data of I never get bored of
 
 Financial machine learning
 
@@ -50,9 +74,11 @@ Planned extensions (in progress):
 
 📰 Market sentiment analysis
 
-🐳 Dockerized deployment
-
 📈 Advanced deep-learning models
+
+Recent updates:
+
+✅ 🐳 Dockerized deployment
 
 🧠 System Architecture (Runtime Flow)
 User (Browser)
@@ -243,6 +269,8 @@ The frontend is intentionally simple to keep focus on backend + ML correctness.
 ├── models.py                # Pydantic models for validation
 ├── requirements.txt
 ├── .gitignore
+├── Dockerfile               # Docker configuration for containerized deployment
+├── .dockerignore            # Excludes unnecessary files for Docker builds
 └── README.md
 
 🧪 Testing
@@ -265,8 +293,6 @@ Near-term
 Mid-term
 
 📰 Market sentiment analysis
-
-🐳 Dockerized deployment
 
 📊 Model persistence (no retrain per request)
 
@@ -295,20 +321,13 @@ Open:
 
 http://127.0.0.1:8000
 
-🎯 Why This Project Matters
+🐳 Docker Deployment
 
-Demonstrates end-to-end ML system design
+The project is now Dockerized for easy, reproducible deployment.
 
-Shows clean separation of data, features, models, and API
+Build and run:
+```bash
+docker build -t stock-prediction .
+docker run -p 8000:8000 stock-prediction
 
-Balances research flexibility with production discipline
-
-Easy to extend, test, and deploy
-
-This is not a notebook experiment — I tried to make it as close to a real system as I can at this point in my journey. Thank you for taking the time to look at this.
-
-⚠️ Disclaimer
-
-This project is for educational and research purposes only.
-It is not financial advice.
-Markets are volatile and unpredictable.
+For more details on the image, visit the [Docker Hub repository](https://hub.docker.com/r/dennis2026/stock-prediction-app).
