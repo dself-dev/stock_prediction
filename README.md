@@ -128,6 +128,11 @@ Target: Next-day closing price (regression) + UP/DOWN direction (classification)
 
 Training: Per request (research phase, with early stopping to prevent overfitting)
 
+Why per-request training?
+- The current system trains per request so users can submit arbitrary tickers and receive a symbol-specific prediction without requiring pretraining across the full market.
+- This was a deliberate design choice for the research/demo phase given limited compute resources and the large universe of stocks and crypto assets.
+- A planned production enhancement is model persistence with freshness checks, so recently requested symbols can reuse saved models while stale models are retrained when needed.
+
 Direction Confidence (DirectionClassifier):
 - Binary neural network (ReLU hidden layers, sigmoid output)
 - Predicts probability of UP (close tomorrow >= today) or DOWN
