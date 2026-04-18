@@ -4,7 +4,7 @@
 
 A full-stack web application that fetches historical time-series stock/crypto data, calculates technical indicators, and uses neural network ensembles to predict **tomorrow's price** and **direction** with confidence.
 
-**Live Demo**: [Add your deployed URL here once ready]  
+  
 **Docker Hub**: https://hub.docker.com/r/dennis2026/stock-prediction-app  
 **GitHub**: https://github.com/dself-dev/stock_prediction
 
@@ -15,10 +15,8 @@ Here’s how the application looks:
 ![Main Interface](screenshots/main_interface.png)
 *Main prediction interface – Enter ticker and date range*
 
-![Prediction Result](screenshots/prediction_result.png)
+![Prediction Result](screenshots/prediction_result.png) 
 *Example prediction for AAPL showing tomorrow’s price, expected change, and direction*
-
-(Replace the file paths above with your actual screenshot file names after you add them to a `screenshots/` folder in your repo)
 
 ### ✨ Key Features
 - Next-day price prediction using linear + nonlinear ensemble
@@ -55,4 +53,4 @@ docker run -p 8000:8000 stock-prediction
 📊 How It Works
 Fetches time-series market data → engineers technical indicators → trains specialized models per ticker → returns price prediction + direction confidence.
 Note: Models currently train on-the-fly (research/demo phase). Model persistence is planned.
-Disclaimer: Educational & research use only. Not financial advice.
+Disclaimer: Educational & research use only. Not financial advice. I am in now way a finacial advisor so do not bet the farm on this!!!
